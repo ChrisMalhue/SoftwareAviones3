@@ -5,6 +5,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -61,7 +62,7 @@ public class Piloto {
     @Column(nullable = false)
     private Integer horas_vuelo;
 
-    @OneToMany(mappedBy = "piloto")
+    @OneToMany(mappedBy = "piloto", fetch = FetchType.EAGER)
     private List<Cursos> cursosAprendidos;
 
 
