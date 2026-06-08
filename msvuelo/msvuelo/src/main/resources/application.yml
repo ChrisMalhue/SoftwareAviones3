@@ -1,0 +1,63 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: msvuelo
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  jpa:
+    show-sql: true
+  profiles:
+    active: dev
+
+services:
+  ubicacion:
+    url: http://localhost:8081
+  avion:
+    url: http://localhost:8082
+  piloto:
+    url: http://localhost:8083
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_vuelo_dev?createDatabaseIfNotExist=true
+    username: root
+    password: ''
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_vuelo_test?createDatabaseIfNotExist=true
+    username: root
+    password: ''
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://localhost:3306/db_vuelo_prod?createDatabaseIfNotExist=true
+    username: root
+    password: ''
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none

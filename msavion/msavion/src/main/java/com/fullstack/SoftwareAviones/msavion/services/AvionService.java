@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.AvionDTO;
+import com.fullstack.SoftwareAviones.msavion.controller.AvionController;
 import com.fullstack.SoftwareAviones.msavion.model.Avion;
 import com.fullstack.SoftwareAviones.msavion.model.TipoAvion;
 import com.fullstack.SoftwareAviones.msavion.repository.AvionRepository;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.transaction.Transactional;
 
@@ -137,6 +140,11 @@ public class AvionService {
                     avion.getOrigen().getPais_origen()
             );
         }
+
+        dto.add(linkTo(methodOn(AvionController.class).buscarPorId(avion.getID_avion())).withSelfRel());
+        dto.add(linkTo(methodOn(AvionController.class).obtenerTodos()).withRel("todos"));
+        dto.add(linkTo(methodOn(AvionController.class).eliminarAvion(avion.getID_avion())).withRel("eliminar"));
+        dto.add(linkTo(methodOn(AvionController.class).actualizarAvion(avion.getID_avion(), null)).withRel("actualizar"));
 
         return dto;
     }

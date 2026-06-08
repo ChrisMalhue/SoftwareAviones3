@@ -7,8 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.TipoDTO;
+import com.fullstack.SoftwareAviones.msavion.controller.TipoController;
 import com.fullstack.SoftwareAviones.msavion.model.Tipo;
 import com.fullstack.SoftwareAviones.msavion.repository.TipoRepository;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.transaction.Transactional;
 
@@ -76,6 +79,10 @@ public class TipoService {
         }
 
         dto.setAviones(aviones);
+
+        dto.add(linkTo(methodOn(TipoController.class).buscarPorId(tipo.getId_tipo())).withSelfRel());
+        dto.add(linkTo(methodOn(TipoController.class).obtenerTodos()).withRel("todos"));
+        dto.add(linkTo(methodOn(TipoController.class).eliminarTipo(tipo.getId_tipo())).withRel("eliminar"));
 
         return dto;
     }

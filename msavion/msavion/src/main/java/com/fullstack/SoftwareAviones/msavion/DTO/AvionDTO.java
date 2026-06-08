@@ -1,10 +1,16 @@
 package com.fullstack.SoftwareAviones.msavion.DTO;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 
-@Data
-public class AvionDTO {
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AvionDTO extends RepresentationModel<AvionDTO> {
     private Integer ID_avion;
     private String matricula;
     private String marca;
@@ -18,5 +24,4 @@ public class AvionDTO {
     private Double capacidad_combustible;
     private String fabricante;
     private String origen;
-
 }
