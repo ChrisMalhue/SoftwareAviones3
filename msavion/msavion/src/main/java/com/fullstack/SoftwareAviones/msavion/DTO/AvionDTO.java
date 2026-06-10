@@ -4,13 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.springframework.hateoas.RepresentationModel;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AvionDTO extends RepresentationModel<AvionDTO> {
+public class AvionDTO{
     private Integer ID_avion;
     private String matricula;
     private String marca;

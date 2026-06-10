@@ -13,7 +13,7 @@ import org.springframework.hateoas.RepresentationModel;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrigenDTO extends RepresentationModel<OrigenDTO> {
+public class OrigenDTO{
     private Integer id_origen;
     private String pais_origen;
     private List<String> aviones;

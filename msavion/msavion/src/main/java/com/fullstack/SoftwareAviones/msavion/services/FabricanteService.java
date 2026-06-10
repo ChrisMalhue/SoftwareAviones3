@@ -4,12 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.FabricanteDTO;
-import com.fullstack.SoftwareAviones.msavion.controller.FabricanteController;
 import com.fullstack.SoftwareAviones.msavion.model.Avion;
 import com.fullstack.SoftwareAviones.msavion.model.Fabricante;
 import com.fullstack.SoftwareAviones.msavion.repository.FabricanteRepository;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.transaction.Transactional;
 
@@ -77,11 +74,6 @@ public class FabricanteService {
         }
 
         dto.setAviones(aviones);
-
-        dto.add(linkTo(methodOn(FabricanteController.class).buscarPorId(fabricante.getId_fabricante())).withSelfRel());
-        dto.add(linkTo(methodOn(FabricanteController.class).obtenerTodos()).withRel("todos"));
-        dto.add(linkTo(methodOn(FabricanteController.class).eliminarFabricante(fabricante.getId_fabricante())).withRel("eliminar"));
-
         return dto;
     }
 

@@ -17,8 +17,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.AvionDTO;
+import com.fullstack.SoftwareAviones.msavion.assemblers.AvionModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Avion;
 import com.fullstack.SoftwareAviones.msavion.services.AvionService;
+
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.MediaTypes;
+
+import java.util.stream.Collectors;
+
+import javax.swing.text.html.parser.Entity;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.validation.Valid;
 
@@ -29,43 +40,55 @@ public class AvionController {
     @Autowired
     private AvionService avionService;
 
-    @GetMapping
-    public ResponseEntity<List<AvionDTO>> obtenerTodos() {
-        List<AvionDTO> aviones = avionService.obtenerTodos();
-        if (aviones.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(aviones, HttpStatus.OK);
+    @Autowired
+    private AvionModelAssembler assembler;
+
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<AvionDTO>> obtenerTodos() {
+        List<EntityModel<AvionDTO>> aviones = avionService.obtenerTodos().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
+        return CollectionModel.of(aviones,
+                    linkTo(methodOn(AvionController.class).obtenerTodos()).withSelfRel());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AvionDTO> buscarPorId(@PathVariable Integer id){
-        try {
-            AvionDTO avion = avionService.buscarPorId(id);
-            return new ResponseEntity<>(avion, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public EntityModel<AvionDTO> buscarPorId(@PathVariable Integer id){
+        AvionDTO avionDTO = avionService.buscarPorId(id);
+        return assembler.toModel(avionDTO);
     }
     
-    @GetMapping("/matricula/{matricula}")
-    public ResponseEntity<List<AvionDTO>> buscarPorMatricula(@PathVariable String matricula){
-        List<AvionDTO> aviones = avionService.buscarPorMatricula(matricula);
-        if (aviones.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(aviones, HttpStatus.OK);
-    }    
+    @GetMapping(value = "/matricula/{matricula}", produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<AvionDTO>> buscarPorMatricula(@PathVariable String matricula) {
+        List<EntityModel<AvionDTO>> aviones = avionService.buscarPorMatricula(matricula)
+                .stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
 
-    @PostMapping
-    public ResponseEntity<Avion> agregarAvion(@Valid @RequestBody Avion avion) {
-        try {
-            Avion nuevoAvion = avionService.guardarAvion(avion);
-            return new ResponseEntity<>(nuevoAvion, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (aviones.isEmpty()) {
+            return CollectionModel.empty();
         }
+
+        return CollectionModel.of(aviones,
+                linkTo(methodOn(AvionController.class).buscarPorMatricula(matricula)).withSelfRel(),
+                linkTo(methodOn(AvionController.class).obtenerTodos()).withRel("aviones"));
     }
+
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<Avion>> agregarAvion(@Valid @RequestBody Avion avion) {
+        Avion newAvion = avionService.guardarAvion(avion);
+        return ResponseEntity
+                .created(linkTo(methodOn(AvionController.class).buscarPorId(newAvion.getID_avion())).toUri())
+                .body(assembler.toModel(newAvion));
+    }
+
+/*  @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<Carrera>> createCarrera(@RequestBody Carrera carrera) {
+        Carrera newCarrera = carreraService.save(carrera);
+        return ResponseEntity
+                .created(linkTo(methodOn(CarreraControllerV2.class).getCarreraByCodigo(newCarrera.getCodigo())).toUri())
+                .body(assembler.toModel(newCarrera));
+    } */
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminarAvion(@PathVariable Integer id) {

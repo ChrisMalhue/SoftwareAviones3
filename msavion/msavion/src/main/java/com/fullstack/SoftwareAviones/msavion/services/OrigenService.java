@@ -6,11 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.OrigenDTO;
-import com.fullstack.SoftwareAviones.msavion.controller.OrigenController;
 import com.fullstack.SoftwareAviones.msavion.model.Origen;
 import com.fullstack.SoftwareAviones.msavion.repository.OrigenRepository;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.transaction.Transactional;
 
@@ -66,10 +63,6 @@ public class OrigenService {
         
         dto.setId_origen(origen.getId_origen());
         dto.setPais_origen(origen.getPais_origen());
-
-        dto.add(linkTo(methodOn(OrigenController.class).buscarPorId(origen.getId_origen())).withSelfRel());
-        dto.add(linkTo(methodOn(OrigenController.class).obtenerTodos()).withRel("todos"));
-        dto.add(linkTo(methodOn(OrigenController.class).eliminarOrigen(origen.getId_origen())).withRel("eliminar"));
 
         return dto;
     }
