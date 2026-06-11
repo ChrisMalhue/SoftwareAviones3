@@ -1,14 +1,8 @@
 package com.fullstack.SoftwareAviones.msavion.DTO;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class AvionDTO{
     private Integer ID_avion;
     private String matricula;

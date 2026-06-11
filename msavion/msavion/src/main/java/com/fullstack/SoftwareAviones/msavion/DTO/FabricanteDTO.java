@@ -1,16 +1,10 @@
 package com.fullstack.SoftwareAviones.msavion.DTO;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class FabricanteDTO{
     private Integer id_fabricante;
     private String nombre_fabricante;

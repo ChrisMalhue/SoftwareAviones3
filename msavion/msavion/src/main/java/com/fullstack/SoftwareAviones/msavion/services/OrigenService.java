@@ -30,19 +30,16 @@ public class OrigenService {
         return convertirADTO(origen);
     }
     
-    public Origen guardarOrigen(Origen origen){
-        return origenRepository.save(origen);
+    public OrigenDTO guardarOrigen(Origen origen){
+        return convertirADTO(origenRepository.save(origen));
     }
 
     //actualizar 
-    public Origen actualizarOrigen(Integer id, Origen origenActualizado) {
-
+    public OrigenDTO actualizarOrigen(Integer id, Origen origenActualizado) {
         Origen origen = origenRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Origen no encontrado"));
-
-        
+            .orElseThrow(() -> new RuntimeException("Origen no encontrado"));
         origen.setPais_origen(origenActualizado.getPais_origen());
-        return origenRepository.save(origen);
+        return convertirADTO(origenRepository.save(origen));
     }
 
     //eliminar 
@@ -67,12 +64,12 @@ public class OrigenService {
         return dto;
     }
 
-    public Origen patchOrigen(Integer id, Origen origen) {
+    public OrigenDTO patchOrigen(Integer id, Origen origen) {
         Origen origen2 = origenRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Origen no encontrado"));
         if (origen.getPais_origen() != null) {
             origen2.setPais_origen(origen.getPais_origen());
         }
-        return origenRepository.save(origen2);
+        return convertirADTO(origenRepository.save(origen2));
     }
 }

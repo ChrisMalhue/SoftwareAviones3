@@ -9,6 +9,9 @@ import com.fullstack.SoftwareAviones.msavion.DTO.AvionDTO;
 import com.fullstack.SoftwareAviones.msavion.model.Avion;
 import com.fullstack.SoftwareAviones.msavion.model.TipoAvion;
 import com.fullstack.SoftwareAviones.msavion.repository.AvionRepository;
+import com.fullstack.SoftwareAviones.msavion.repository.FabricanteRepository;
+import com.fullstack.SoftwareAviones.msavion.repository.OrigenRepository;
+import com.fullstack.SoftwareAviones.msavion.repository.TipoRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -18,6 +21,15 @@ public class AvionService {
 
     @Autowired
     private AvionRepository avionRepository;
+
+    @Autowired  
+    private FabricanteRepository fabricanteRepository;
+
+    @Autowired 
+    private OrigenRepository origenRepository;
+
+    @Autowired  
+    private TipoRepository tipoRepository;
 
     public List<AvionDTO> obtenerTodos() {
         return avionRepository.findAll().stream()
@@ -99,10 +111,21 @@ public class AvionService {
         }
     }
 
-    public Avion guardarAvion(Avion avion) {
+    public AvionDTO guardarAvion(Avion avion) {
+
+        avion.setFabricante(fabricanteRepository.findById(avion.getFabricante().getId_fabricante())
+        .orElseThrow(() -> new RuntimeException("Fabricante no encontrado")));
+
+        avion.setOrigen(origenRepository.findById(avion.getOrigen().getId_origen())
+            .orElseThrow(() -> new RuntimeException("Origen no encontrado")));
+
+        avion.setTipo(tipoRepository.findById(avion.getTipo().getId_tipo())
+            .orElseThrow(() -> new RuntimeException("Tipo no encontrado")));
+
         normalizarTipo(avion);
         validarTipo(avion);
-        return avionRepository.save(avion);
+        Avion guardado = avionRepository.save(avion);
+        return convertirADTO(guardado);
     }
 
     private AvionDTO convertirADTO(Avion avion) {
@@ -141,9 +164,18 @@ public class AvionService {
         return dto;
     }
 
-    public Avion actualizarAvion(Integer id, Avion avionActualizado) {
+    public AvionDTO actualizarAvion(Integer id, Avion avionActualizado) {
         Avion avion = avionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Avión no encontrado"));
+
+        avion.setFabricante(fabricanteRepository.findById(avionActualizado.getFabricante().getId_fabricante())
+        .orElseThrow(() -> new RuntimeException("Fabricante no encontrado")));
+
+        avion.setOrigen(origenRepository.findById(avionActualizado.getOrigen().getId_origen())
+            .orElseThrow(() -> new RuntimeException("Origen no encontrado")));
+
+        avion.setTipo(tipoRepository.findById(avionActualizado.getTipo().getId_tipo())
+            .orElseThrow(() -> new RuntimeException("Tipo no encontrado")));
 
         avion.setMatricula(avionActualizado.getMatricula());
         avion.setMarca(avionActualizado.getMarca());
@@ -164,7 +196,7 @@ public class AvionService {
 
         validarTipo(avion);
 
-        return avionRepository.save(avion);
+        return convertirADTO(avionRepository.save(avion));
     }
 
     public List<AvionDTO> buscarPorMatricula(String matricula){
@@ -187,9 +219,10 @@ public class AvionService {
         }
     }
 
-    public Avion patchAvion(Integer id, Avion avion) {
+    public AvionDTO patchAvion(Integer id, Avion avion) {
         Avion avion2 = avionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Avion no encontrado"));
+
         if (avion.getMatricula() != null)
             avion2.setMatricula(avion.getMatricula());
         if (avion.getMarca() != null)
@@ -197,7 +230,8 @@ public class AvionService {
         if (avion.getModelo() != null)
             avion2.setModelo(avion.getModelo());
         if (avion.getTipo() != null)
-            avion2.setTipo(avion.getTipo());
+            avion2.setTipo(tipoRepository.findById(avion.getTipo().getId_tipo())
+                .orElseThrow(() -> new RuntimeException("Tipo no encontrado")));
         if (avion.getCapacidad_pasajero() != null)
             avion2.setCapacidad_pasajero(avion.getCapacidad_pasajero());
         if (avion.getCapacidad_carga_kg() != null)
@@ -211,10 +245,13 @@ public class AvionService {
         if (avion.getCapacidad_combustible() != null)
             avion2.setCapacidad_combustible(avion.getCapacidad_combustible());
         if (avion.getFabricante() != null)
-            avion2.setFabricante(avion.getFabricante());
+            avion2.setFabricante(fabricanteRepository.findById(avion.getFabricante().getId_fabricante())
+                .orElseThrow(() -> new RuntimeException("Fabricante no encontrado")));
         if (avion.getOrigen() != null)
-            avion2.setOrigen(avion.getOrigen());
-        return avionRepository.save(avion2);
+            avion2.setOrigen(origenRepository.findById(avion.getOrigen().getId_origen())
+                .orElseThrow(() -> new RuntimeException("Origen no encontrado")));
+
+        return convertirADTO(avionRepository.save(avion2));
     }
 }
 

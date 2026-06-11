@@ -1,7 +1,14 @@
 package com.fullstack.SoftwareAviones.msavion.controller;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.OrigenDTO;
+import com.fullstack.SoftwareAviones.msavion.assemblers.OrigenModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Origen;
 import com.fullstack.SoftwareAviones.msavion.services.OrigenService;
 
@@ -29,67 +37,71 @@ public class OrigenController {
     @Autowired
     private OrigenService origenService;
 
-    @GetMapping
-    public ResponseEntity<List<OrigenDTO>> obtenerTodos() {
-        List<OrigenDTO> origenes = origenService.obtenerTodos();
+    @Autowired
+    private OrigenModelAssembler assembler;
+
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> obtenerTodos() {
+        List<EntityModel<OrigenDTO>> origenes = origenService.obtenerTodos().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
         if (origenes.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(origenes, HttpStatus.OK);
+        return ResponseEntity.ok(CollectionModel.of(origenes,
+                linkTo(methodOn(OrigenController.class).obtenerTodos()).withSelfRel()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<OrigenDTO> buscarPorId(@PathVariable Integer id) {
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
-            OrigenDTO origen = origenService.buscarPorId(id);
-            return new ResponseEntity<>(origen, HttpStatus.OK);
-
+            OrigenDTO dto = origenService.buscarPorId(id);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PostMapping
-    public ResponseEntity<Origen> agregarOrigen(@Valid @RequestBody Origen origen) {
-        try {
-            Origen nuevo = origenService.guardarOrigen(origen);
-            return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }    
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarOrigen(@PathVariable Integer id) {
-        String resultado = origenService.eliminar(id);
-        if (resultado.contains("exitosamente") || resultado.contains("retirado")) {
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(resultado, HttpStatus.NOT_FOUND);
-    }    
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Origen> patchOrigen(@PathVariable Integer id, @RequestBody Origen origen) {
-        try {
-            Origen origenEditado = origenService.patchOrigen(id, origen);
-            return new ResponseEntity<>(origenEditado, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Origen> actualizarOrigen(@PathVariable Integer id,
-                                                    @Valid @RequestBody Origen origen) {
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> agregarOrigen(@Valid @RequestBody Origen origen) {
         try {
-            Origen actualizado = origenService.actualizarOrigen(id, origen);
-            return new ResponseEntity<>(actualizado, HttpStatus.OK);
-
+            OrigenDTO dto = origenService.guardarOrigen(origen);
+            return ResponseEntity
+                .created(linkTo(methodOn(OrigenController.class).buscarPorId(dto.getId_origen())).toUri())
+                .body(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-    }    
+    }
 
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> eliminarOrigen(@PathVariable Integer id) {
+        try {
+            String mensaje = origenService.eliminar(id);
+            return new ResponseEntity<>(mensaje, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 
+    @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> patchOrigen(@PathVariable Integer id, @RequestBody Origen origen) {
+        try {
+            OrigenDTO dto = origenService.patchOrigen(id, origen);
+            return ResponseEntity.ok(assembler.toModel(dto));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> actualizarOrigen(@PathVariable Integer id, @Valid @RequestBody Origen origen) {
+        try {
+            origen.setId_origen(id);
+            OrigenDTO dto = origenService.actualizarOrigen(id, origen);
+            return ResponseEntity.ok(assembler.toModel(dto));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
 }
