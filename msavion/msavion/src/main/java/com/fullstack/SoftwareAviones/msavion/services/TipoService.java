@@ -32,20 +32,19 @@ public class TipoService {
         return convertirADTO(tipo);
     }
 
-    public Tipo guardarTipo(Tipo tipo){
-        return tipoRepository.save(tipo);
+    public TipoDTO guardarTipo(Tipo tipo) {
+        return convertirADTO(tipoRepository.save(tipo));
     }
 
     public Tipo buscarID_Tipo(Integer id){
         return tipoRepository.findById(id).orElse(null);
     }
     //actualizar 
-    public Tipo actualizarTipo(Integer id, Tipo tipoActualizado) {
+    public TipoDTO actualizarTipo(Integer id, Tipo tipoActualizado) {
         Tipo tipo = tipoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
- 
         tipo.setTipo(tipoActualizado.getTipo());
-        return tipoRepository.save(tipo);
+        return convertirADTO(tipoRepository.save(tipo));
     }
     //eliminar 
     public String eliminar(Integer id) {
@@ -82,14 +81,13 @@ public class TipoService {
         return dto;
     }
 
-    public Tipo patchTipo(Integer id, Tipo tipo) {
+    public TipoDTO patchTipo(Integer id, Tipo tipo) {
         Tipo tipo2 = tipoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
         if (tipo.getTipo() != null) {
             tipo2.setTipo(tipo.getTipo());
         }
-        return tipoRepository.save(tipo2);
+        return convertirADTO(tipoRepository.save(tipo2));
     }
-
 }
 

@@ -33,16 +33,15 @@ public class FabricanteService {
         return convertirADTO(fabricante);
     }
     
-    public Fabricante guardarFabricante(Fabricante fabricante) {
-        return fabricanteRepository.save(fabricante);
+    public FabricanteDTO guardarFabricante(Fabricante fabricante) {
+        return convertirADTO(fabricanteRepository.save(fabricante));
     }
     
-    public Fabricante actualizarFabricante(Integer id, Fabricante fabricanteActualizado) {
+    public FabricanteDTO actualizarFabricante(Integer id, Fabricante fabricanteActualizado) {
         Fabricante fabricante = fabricanteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fabricante no encontrado"));
-
         fabricante.setNombre_fabricante(fabricanteActualizado.getNombre_fabricante());
-        return fabricanteRepository.save(fabricante);
+        return convertirADTO(fabricanteRepository.save(fabricante));
     }
 
     public String eliminar(Integer id) {
@@ -77,15 +76,12 @@ public class FabricanteService {
         return dto;
     }
 
-    public Fabricante patchFabricante(Integer id, Fabricante fabricante) {
+    public FabricanteDTO patchFabricante(Integer id, Fabricante fabricante) {
         Fabricante fabricante2 = fabricanteRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Fabricante no encontrado"));
         if (fabricante.getNombre_fabricante() != null) {
             fabricante2.setNombre_fabricante(fabricante.getNombre_fabricante());
         }
-        return fabricanteRepository.save(fabricante2);
+        return convertirADTO(fabricanteRepository.save(fabricante2));
     }
-
-
-
 }

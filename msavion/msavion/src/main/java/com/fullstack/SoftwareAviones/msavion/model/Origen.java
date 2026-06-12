@@ -40,4 +40,3 @@ public class Origen {
 
 }
 
-//id_origen - pais_origen - aviones

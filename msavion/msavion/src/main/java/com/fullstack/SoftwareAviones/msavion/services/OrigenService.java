@@ -1,11 +1,13 @@
 package com.fullstack.SoftwareAviones.msavion.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.OrigenDTO;
+import com.fullstack.SoftwareAviones.msavion.model.Avion;
 import com.fullstack.SoftwareAviones.msavion.model.Origen;
 import com.fullstack.SoftwareAviones.msavion.repository.OrigenRepository;
 
@@ -55,12 +57,20 @@ public class OrigenService {
     }
 
     private OrigenDTO convertirADTO(Origen origen) {
-
         OrigenDTO dto = new OrigenDTO();
-        
+
         dto.setId_origen(origen.getId_origen());
         dto.setPais_origen(origen.getPais_origen());
 
+        List<String> aviones = new ArrayList<>();
+
+        if (origen.getAviones() != null) {
+            for (Avion avion : origen.getAviones()) {
+                aviones.add(avion.getMatricula());
+            }
+        }
+
+        dto.setAviones(aviones);
         return dto;
     }
 

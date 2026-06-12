@@ -1,7 +1,11 @@
 package com.fullstack.SoftwareAviones.msavion.controller;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,8 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fullstack.SoftwareAviones.msavion.DTO.TipoDTO;
+import com.fullstack.SoftwareAviones.msavion.assemblers.TipoModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Tipo;
 import com.fullstack.SoftwareAviones.msavion.services.TipoService;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import jakarta.validation.Valid;
 
@@ -29,62 +36,72 @@ public class TipoController {
     @Autowired
     private TipoService tipoService;
 
-    @GetMapping
-    public ResponseEntity<List<TipoDTO>> obtenerTodos() {
-        List<TipoDTO> tipos = tipoService.obtenerTodos();
+    @Autowired
+    private TipoModelAssembler assembler;
+
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> obtenerTodos() {
+        List<EntityModel<TipoDTO>> tipos = tipoService.obtenerTodos().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
         if (tipos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(tipos, HttpStatus.OK);
+        return ResponseEntity.ok(CollectionModel.of(tipos,
+                linkTo(methodOn(TipoController.class).obtenerTodos()).withSelfRel()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TipoDTO> buscarPorId(@PathVariable Integer id) {
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
-            TipoDTO tipo = tipoService.buscarPorId(id);
-            return new ResponseEntity<>(tipo, HttpStatus.OK);
+            TipoDTO dto = tipoService.buscarPorId(id);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Tipo> agregarTipo(@Valid @RequestBody Tipo tipo) {
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> agregarTipo(@Valid @RequestBody Tipo tipo) {
         try {
-            Tipo nuevo = tipoService.guardarTipo(tipo);
-            return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }    
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarTipo(@PathVariable Integer id) {
-        String resultado = tipoService.eliminar(id);
-        if (resultado.contains("exitosamente") || resultado.contains("retirado")) {
-            return new ResponseEntity<>(resultado, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(resultado, HttpStatus.NOT_FOUND);
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Tipo> patchTipo(@PathVariable Integer id, @RequestBody Tipo tipo) {
-        try {
-            Tipo tipoEditado = tipoService.patchTipo(id, tipo);
-            return new ResponseEntity<>(tipoEditado, HttpStatus.OK);
+            TipoDTO dto = tipoService.guardarTipo(tipo);
+            return ResponseEntity
+                .created(linkTo(methodOn(TipoController.class).buscarPorId(dto.getId_tipo())).toUri())
+                .body(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }  
+
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> eliminarTipo(@PathVariable Integer id) {
+        try {
+            String mensaje = tipoService.eliminar(id);
+            return new ResponseEntity<>(mensaje, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Tipo> actualizarTipo(@PathVariable Integer id, @Valid @RequestBody Tipo tipo) {
+    @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> patchTipo(@PathVariable Integer id, @RequestBody Tipo tipo) {
         try {
-            Tipo actualizado = tipoService.actualizarTipo(id, tipo);
-            return new ResponseEntity<>(actualizado, HttpStatus.OK);
+            TipoDTO dto = tipoService.patchTipo(id, tipo);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
-    }    
+    }
+
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> actualizarTipo(@PathVariable Integer id, @Valid @RequestBody Tipo tipo) {
+        try {
+            tipo.setId_tipo(id);
+            TipoDTO dto = tipoService.actualizarTipo(id, tipo);
+            return ResponseEntity.ok(assembler.toModel(dto));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }  
 
 }
