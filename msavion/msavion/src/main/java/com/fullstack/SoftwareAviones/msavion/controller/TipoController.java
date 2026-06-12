@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.fullstack.SoftwareAviones.msavion.DTO.TipoDTO;
 import com.fullstack.SoftwareAviones.msavion.assemblers.TipoModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Tipo;
@@ -31,6 +34,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/tipos")
+@Tag(name = "Tipos", description = "Operaciones relacionadas con los tipos")
 public class TipoController {
 
     @Autowired
@@ -40,6 +44,7 @@ public class TipoController {
     private TipoModelAssembler assembler;
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener todos los tipos", description = "Obtiene una lista de todos los tipos")
     public ResponseEntity<?> obtenerTodos() {
         List<EntityModel<TipoDTO>> tipos = tipoService.obtenerTodos().stream()
                 .map(assembler::toModel)
@@ -52,6 +57,7 @@ public class TipoController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener un tipo por su ID", description = "Obtiene el tipo por el ID ingresado")
     public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
             TipoDTO dto = tipoService.buscarPorId(id);
@@ -62,6 +68,7 @@ public class TipoController {
     }
 
     @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Agregar un tipo", description = "Agrega un tipo a la base de datos")
     public ResponseEntity<?> agregarTipo(@Valid @RequestBody Tipo tipo) {
         try {
             TipoDTO dto = tipoService.guardarTipo(tipo);
@@ -74,6 +81,7 @@ public class TipoController {
     }  
 
     @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Eliminar un tipo", description = "Elimina un tipo de la base de datos")
     public ResponseEntity<?> eliminarTipo(@PathVariable Integer id) {
         try {
             String mensaje = tipoService.eliminar(id);
@@ -84,6 +92,7 @@ public class TipoController {
     }
 
     @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar una columna de tipo", description = "Actualiza el atributo del tipo solicitado")
     public ResponseEntity<?> patchTipo(@PathVariable Integer id, @RequestBody Tipo tipo) {
         try {
             TipoDTO dto = tipoService.patchTipo(id, tipo);
@@ -94,6 +103,7 @@ public class TipoController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar el tipo completo", description = "Actualiza el tipo completo con sus atributos")
     public ResponseEntity<?> actualizarTipo(@PathVariable Integer id, @Valid @RequestBody Tipo tipo) {
         try {
             tipo.setId_tipo(id);

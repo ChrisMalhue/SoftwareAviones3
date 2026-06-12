@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.fullstack.SoftwareAviones.msavion.DTO.OrigenDTO;
 import com.fullstack.SoftwareAviones.msavion.assemblers.OrigenModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Origen;
@@ -32,6 +35,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/origenes")
+@Tag(name = "Origenes", description = "Operaciones relacionadas con los origenes")
 public class OrigenController {
 
     @Autowired
@@ -41,6 +45,7 @@ public class OrigenController {
     private OrigenModelAssembler assembler;
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener todos los origenes", description = "Obtiene una lista de todos los origenes")    
     public ResponseEntity<?> obtenerTodos() {
         List<EntityModel<OrigenDTO>> origenes = origenService.obtenerTodos().stream()
                 .map(assembler::toModel)
@@ -53,6 +58,7 @@ public class OrigenController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener un origen por su ID", description = "Obtiene el origen por el ID ingresado")
     public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
             OrigenDTO dto = origenService.buscarPorId(id);
@@ -63,6 +69,7 @@ public class OrigenController {
     }
 
     @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Agregar un origen", description = "Agrega un origen a la base de datos")
     public ResponseEntity<?> agregarOrigen(@Valid @RequestBody Origen origen) {
         try {
             OrigenDTO dto = origenService.guardarOrigen(origen);
@@ -75,6 +82,7 @@ public class OrigenController {
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Eliminar un origen", description = "Elimina un origen de la base de datos")
     public ResponseEntity<?> eliminarOrigen(@PathVariable Integer id) {
         try {
             String mensaje = origenService.eliminar(id);
@@ -85,6 +93,7 @@ public class OrigenController {
     }
 
     @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar una columna de origen", description = "Actualiza el atributo del origen solicitado")
     public ResponseEntity<?> patchOrigen(@PathVariable Integer id, @RequestBody Origen origen) {
         try {
             OrigenDTO dto = origenService.patchOrigen(id, origen);
@@ -95,6 +104,7 @@ public class OrigenController {
     }
 
     @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar el origen completo", description = "Actualiza el origen completo con sus atributos")
     public ResponseEntity<?> actualizarOrigen(@PathVariable Integer id, @Valid @RequestBody Origen origen) {
         try {
             origen.setId_origen(id);

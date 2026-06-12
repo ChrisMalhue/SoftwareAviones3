@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.fullstack.SoftwareAviones.msavion.DTO.AvionDTO;
 import com.fullstack.SoftwareAviones.msavion.assemblers.AvionModelAssembler;
 import com.fullstack.SoftwareAviones.msavion.model.Avion;
@@ -33,6 +36,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/aviones")
+@Tag(name = "Aviones", description = "Operaciones relacionadas con los aviones")
 public class AvionController {
 
     @Autowired
@@ -42,6 +46,7 @@ public class AvionController {
     private AvionModelAssembler assembler;
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener todos los aviones", description = "Obtiene una lista de todos los aviones")
     public ResponseEntity<?> obtenerTodos() {
         List<EntityModel<AvionDTO>> aviones = avionService.obtenerTodos().stream()
                 .map(assembler::toModel)
@@ -54,6 +59,7 @@ public class AvionController {
     }
 
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener un avion por su ID", description = "Obtiene el avion por el ID ingresado")
     public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
             AvionDTO avionDTO = avionService.buscarPorId(id);
@@ -64,6 +70,7 @@ public class AvionController {
     }
     
     @GetMapping(value = "/matricula/{matricula}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener un avion por su Matricula", description = "Obtiene el avion por la Matricula ingresada")
     public ResponseEntity<?> buscarPorMatricula(@PathVariable String matricula) {
         try {
             List<EntityModel<AvionDTO>> aviones = avionService.buscarPorMatricula(matricula)
@@ -84,6 +91,7 @@ public class AvionController {
     }
 
     @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Agregar un avion", description = "Agrega un avion a la base de datos")
     public ResponseEntity<?> agregarAvion(@Valid @RequestBody Avion avion) {
         try {
             AvionDTO dto = avionService.guardarAvion(avion);
@@ -96,6 +104,7 @@ public class AvionController {
     }
 
     @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Eliminar un avion", description = "Elimina un avion de la base de datos")
     public ResponseEntity<?> eliminarAvion(@PathVariable Integer id) {
         try {
             String mensaje = avionService.eliminar(id);
@@ -107,6 +116,7 @@ public class AvionController {
 
     
     @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar una columna de avion", description = "Actualiza el atributo del avion solicitado")
     public ResponseEntity<?> patchAvion(@PathVariable Integer id, @RequestBody Avion avion) {
         try {
             AvionDTO dto = avionService.patchAvion(id, avion);
@@ -117,6 +127,7 @@ public class AvionController {
     }
     
     @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar el avion completo", description = "Actualiza el avion completo con sus atributos")
     public ResponseEntity<?> actualizarAvion(@PathVariable Integer id, @Valid @RequestBody Avion avion) {
         try {
             avion.setID_avion(id);
