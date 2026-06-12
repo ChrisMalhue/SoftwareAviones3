@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.fullstack.SoftwareAviones.mspiloto.DTO.CursosDTO;
 import com.fullstack.SoftwareAviones.mspiloto.model.Cursos;
+import com.fullstack.SoftwareAviones.mspiloto.repository.CursoRepository;
 import com.fullstack.SoftwareAviones.mspiloto.repository.CursosRepository;
+import com.fullstack.SoftwareAviones.mspiloto.repository.PilotoRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -17,6 +19,12 @@ public class CursosService {
 
     @Autowired
     private CursosRepository cursosRepository;
+
+    @Autowired
+    private PilotoRepository pilotoRepository;
+
+    @Autowired
+    private CursoRepository cursoRepository;
 
     public List<CursosDTO> obtenerTodos() {
         return cursosRepository.findAll().stream()
@@ -41,19 +49,28 @@ public class CursosService {
         }
     }
     
-    public Cursos guardarCursos(Cursos cursos) {
-        return cursosRepository.save(cursos);
-    } 
+    public CursosDTO guardarCursos(Cursos cursos) {
+        cursos.setPiloto(pilotoRepository.findById(cursos.getPiloto().getID_piloto())
+            .orElseThrow(() -> new RuntimeException("Piloto no encontrado")));
+
+        cursos.setCurso(cursoRepository.findById(cursos.getCurso().getID_curso())
+            .orElseThrow(() -> new RuntimeException("Curso no encontrado")));
+
+        return convertirADTO(cursosRepository.save(cursos));
+    }
     
-    public Cursos actualizarCursos(Integer id, Cursos cursosActualizado) {
+    public CursosDTO actualizarCursos(Integer id, Cursos cursosActualizado) {
         Cursos cursos = cursosRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Registro no encontrado"));
 
-        cursos.setPiloto(cursosActualizado.getPiloto());
-        cursos.setCurso(cursosActualizado.getCurso());
+        cursos.setPiloto(pilotoRepository.findById(cursosActualizado.getPiloto().getID_piloto())
+            .orElseThrow(() -> new RuntimeException("Piloto no encontrado")));
 
-        return cursosRepository.save(cursos);
-    }   
+        cursos.setCurso(cursoRepository.findById(cursosActualizado.getCurso().getID_curso())
+            .orElseThrow(() -> new RuntimeException("Curso no encontrado")));
+
+        return convertirADTO(cursosRepository.save(cursos));
+    }
     
     private CursosDTO convertirADTO(Cursos cursos) {
         CursosDTO dto = new CursosDTO();

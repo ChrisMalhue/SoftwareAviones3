@@ -51,17 +51,15 @@ public class CursoService {
         }
     }
 
-    public Curso guardarCurso(Curso curso) {
-        return cursoRepository.save(curso);
+    public CursoDTO guardarCurso(Curso curso) {
+        return convertirADTO(cursoRepository.save(curso));
     }
 
-    public Curso actualizarCurso(Integer id, Curso cursoActualizado) {
+    public CursoDTO actualizarCurso(Integer id, Curso cursoActualizado) {
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
-
         curso.setNombre_curso(cursoActualizado.getNombre_curso());
-
-        return cursoRepository.save(curso);
+        return convertirADTO(cursoRepository.save(curso));
     }
 
     private CursoDTO convertirADTO(Curso curso) {
@@ -87,13 +85,13 @@ public class CursoService {
         return dto;
     }
 
-    public Curso patchCurso(Integer id, Curso curso) {
+    public CursoDTO patchCurso(Integer id, Curso curso) {
         Curso curso2 = cursoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
         if (curso.getNombre_curso() != null) {
             curso2.setNombre_curso(curso.getNombre_curso());
         }
-        return cursoRepository.save(curso2);
+        return convertirADTO(cursoRepository.save(curso2));
     }
 
 }

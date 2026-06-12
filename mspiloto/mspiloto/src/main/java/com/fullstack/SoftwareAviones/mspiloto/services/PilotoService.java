@@ -42,11 +42,11 @@ public class PilotoService {
         }
     }
 
-    public Piloto guardarPiloto(Piloto piloto) {
-        return pilotoRepository.save(piloto);
+    public PilotoDTO guardarPiloto(Piloto piloto) {
+        return convertirADTO(pilotoRepository.save(piloto));
     }
 
-    public Piloto actualizarPiloto(Integer id, Piloto pilotoActualizado) {
+    public PilotoDTO actualizarPiloto(Integer id, Piloto pilotoActualizado) {
         Piloto piloto = pilotoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Piloto no encontrado"));
 
@@ -56,7 +56,7 @@ public class PilotoService {
         piloto.setFecha_nacimiento(pilotoActualizado.getFecha_nacimiento());
         piloto.setHoras_vuelo(pilotoActualizado.getHoras_vuelo());
 
-        return pilotoRepository.save(piloto);
+        return convertirADTO(pilotoRepository.save(piloto));
     }
 
     private PilotoDTO convertirADTO(Piloto piloto) {
@@ -95,7 +95,7 @@ public class PilotoService {
                 .toList();
     }
 
-    public Piloto patchPiloto(Integer id, Piloto piloto) {
+    public PilotoDTO patchPiloto(Integer id, Piloto piloto) {
         Piloto piloto2 = pilotoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Piloto no encontrado"));
         if (piloto.getRut() != null)
@@ -108,7 +108,7 @@ public class PilotoService {
             piloto2.setFecha_nacimiento(piloto.getFecha_nacimiento());
         if (piloto.getHoras_vuelo() != null)
             piloto2.setHoras_vuelo(piloto.getHoras_vuelo());
-        return pilotoRepository.save(piloto2);
+        return convertirADTO(pilotoRepository.save(piloto2));
     }
     
 }
