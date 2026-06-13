@@ -58,11 +58,11 @@ public class VueloService {
         }
     }
 
-    public Vuelo agregarVuelo(Vuelo vuelo) {
-        return vueloRepository.save(vuelo);
+    public VueloDTO agregarVuelo(Vuelo vuelo) {
+        return convertirADTO(vueloRepository.save(vuelo));
     }
 
-    public Vuelo actualizarVuelo(Integer id, Vuelo vueloActualizado) {
+    public VueloDTO actualizarVuelo(Integer id, Vuelo vueloActualizado) {
         Vuelo vuelo = vueloRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vuelo no encontrado"));
 
@@ -74,10 +74,10 @@ public class VueloService {
         vuelo.setIdAvion(vueloActualizado.getIdAvion());
         vuelo.setIdAerodromo(vueloActualizado.getIdAerodromo());
 
-        return vueloRepository.save(vuelo);
+        return convertirADTO(vueloRepository.save(vuelo));
     }
 
-    public Vuelo patchVuelo(Integer id, Vuelo vuelo) {
+    public VueloDTO patchVuelo(Integer id, Vuelo vuelo) {
         Vuelo vuelo2 = vueloRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vuelo no encontrado"));
         if (vuelo.getNumero_vuelo() != null)
@@ -94,7 +94,7 @@ public class VueloService {
             vuelo2.setIdAvion(vuelo.getIdAvion());
         if (vuelo.getIdAerodromo() != null)
             vuelo2.setIdAerodromo(vuelo.getIdAerodromo());
-        return vueloRepository.save(vuelo2);
+        return convertirADTO(vueloRepository.save(vuelo2));
     }
 
     private VueloDTO convertirADTO(Vuelo vuelo) {

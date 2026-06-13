@@ -43,16 +43,16 @@ public class AvionesService {
         return convertirADTO(aviones);
     }
 
-    public Aviones guardarAviones(Aviones aviones) {
-        return avionesRepository.save(aviones);
+    public AvionesDTO guardarAviones(Aviones aviones) {
+        return convertirADTO(avionesRepository.save(aviones));
     }
 
-    public Aviones actualizarAviones(Integer id, Aviones avionesActualizado) {
+    public AvionesDTO actualizarAviones(Integer id, Aviones avionesActualizado) {
         Aviones aviones = avionesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Registro no encontrado"));
         aviones.setIdPiloto(avionesActualizado.getIdPiloto());
         aviones.setIdAvion(avionesActualizado.getIdAvion());
-        return avionesRepository.save(aviones);
+        return convertirADTO(avionesRepository.save(aviones));
     }
 
     public String eliminar(Integer id) {

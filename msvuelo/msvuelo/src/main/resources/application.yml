@@ -1,6 +1,12 @@
 server:
   port: 8084
 
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /doc/swagger-ui/index.html
+
 spring:
   application:
     name: msvuelo
