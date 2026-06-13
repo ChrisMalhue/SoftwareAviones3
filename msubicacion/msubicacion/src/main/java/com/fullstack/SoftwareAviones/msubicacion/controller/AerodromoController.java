@@ -1,7 +1,11 @@
 package com.fullstack.SoftwareAviones.msubicacion.controller;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -17,50 +21,67 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fullstack.SoftwareAviones.msubicacion.DTO.AerodromoDTO;
+import com.fullstack.SoftwareAviones.msubicacion.assemblers.AerodromoModelAssembler;
 import com.fullstack.SoftwareAviones.msubicacion.model.Aerodromo;
 import com.fullstack.SoftwareAviones.msubicacion.services.AerodromoService;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/aerodromos")
+@Tag(name = "Aerodromos", description = "Operaciones relacionadas con los aerodromos")
 public class AerodromoController {
 
     @Autowired
     private AerodromoService aerodromoService;
 
-    @GetMapping
-    public ResponseEntity<List<AerodromoDTO>> obtenerTodos() {
-        List<AerodromoDTO> aerodromos = aerodromoService.obtenerTodos();
+    @Autowired
+    private AerodromoModelAssembler assembler;
+
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener todos los aerodromos", description = "Obtiene una lista de todos los aerodromos")
+    public ResponseEntity<?> obtenerTodos() {
+        List<EntityModel<AerodromoDTO>> aerodromos = aerodromoService.obtenerTodos().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
         if (aerodromos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(aerodromos, HttpStatus.OK);
+        return ResponseEntity.ok(CollectionModel.of(aerodromos,
+                linkTo(methodOn(AerodromoController.class).obtenerTodos()).withSelfRel()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AerodromoDTO> buscarPorId(@PathVariable Integer id) {
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Obtener un aerodromo por su ID", description = "Obtiene el aerodromo por el ID ingresado")
+    public ResponseEntity<?> buscarPorId(@PathVariable Integer id) {
         try {
-            AerodromoDTO aerodromo = aerodromoService.buscarPorId(id);
-            return new ResponseEntity<>(aerodromo, HttpStatus.OK);
+            AerodromoDTO dto = aerodromoService.buscarPorId(id);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PostMapping
-    public ResponseEntity<Aerodromo> agregarAerodromo(@Valid @RequestBody Aerodromo aerodromo) {
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Agregar un aerodromo", description = "Agrega un aerodromo a la base de datos")
+    public ResponseEntity<?> agregarAerodromo(@Valid @RequestBody Aerodromo aerodromo) {
         try {
-            Aerodromo nuevo = aerodromoService.guardarAerodromo(aerodromo);
-            return new ResponseEntity<>(nuevo, HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            AerodromoDTO dto = aerodromoService.guardarAerodromo(aerodromo);
+            return ResponseEntity
+                .created(linkTo(methodOn(AerodromoController.class).buscarPorId(dto.getID_aerodromo())).toUri())
+                .body(assembler.toModel(dto));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
     
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarAerodromo(@PathVariable Integer id) {
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Eliminar un aerodromo", description = "Elimina un aerodromo de la base de datos")
+    public ResponseEntity<?> eliminarAerodromo(@PathVariable Integer id) {
         String resultado = aerodromoService.eliminar(id);
         if (resultado.contains("exitosamente") || resultado.contains("retirado")) {
             return new ResponseEntity<>(resultado, HttpStatus.OK);
@@ -68,25 +89,27 @@ public class AerodromoController {
         return new ResponseEntity<>(resultado, HttpStatus.NOT_FOUND);
     }
     
-    @PatchMapping("/{id}")
-    public ResponseEntity<Aerodromo> patchAerodromo(@PathVariable Integer id, @RequestBody Aerodromo aerodromo) {
+    @PatchMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar una columna del aerodromo", description = "Actualiza el atributo del aerodromo solicitado")
+    public ResponseEntity<?> patchAerodromo(@PathVariable Integer id, @RequestBody Aerodromo aerodromo) {
         try {
-            Aerodromo aerodromoEditado = aerodromoService.patchAerodromo(id, aerodromo);
-            return new ResponseEntity<>(aerodromoEditado, HttpStatus.OK);
+            AerodromoDTO dto = aerodromoService.patchAerodromo(id, aerodromo);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }   
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Aerodromo> actualizarAerodromo(@PathVariable Integer id, @Valid @RequestBody Aerodromo aerodromo) {
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    @Operation(summary = "Actualizar el aerodromo completo", description = "Actualiza el aerodromo completo con sus atributos")
+    public ResponseEntity<?> actualizarAerodromo(@PathVariable Integer id, @Valid @RequestBody Aerodromo aerodromo) {
         try {
-            Aerodromo actualizado = aerodromoService.actualizarAerodromo(id, aerodromo);
-            return new ResponseEntity<>(actualizado, HttpStatus.OK);
-
+            aerodromo.setID_aerodromo(id);
+            AerodromoDTO dto = aerodromoService.actualizarAerodromo(id, aerodromo);
+            return ResponseEntity.ok(assembler.toModel(dto));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
-    }    
+    }   
 
 }

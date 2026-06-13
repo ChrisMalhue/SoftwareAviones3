@@ -10,6 +10,7 @@ import com.fullstack.SoftwareAviones.msubicacion.DTO.ComunaDTO;
 import com.fullstack.SoftwareAviones.msubicacion.model.Aerodromo;
 import com.fullstack.SoftwareAviones.msubicacion.model.Comuna;
 import com.fullstack.SoftwareAviones.msubicacion.repository.ComunaRepository;
+import com.fullstack.SoftwareAviones.msubicacion.repository.RegionRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -20,6 +21,9 @@ public class ComunaService {
 
     @Autowired
     private ComunaRepository comunaRepository;
+
+    @Autowired
+    private RegionRepository regionRepository;
 
     public List<ComunaDTO> obtenerTodos(){
         return comunaRepository.findAll().stream()
@@ -44,20 +48,23 @@ public class ComunaService {
         }
     }
 
-    public Comuna guardarComuna(Comuna comuna) {
-        return comunaRepository.save(comuna);
+    public ComunaDTO guardarComuna(Comuna comuna) {
+        comuna.setRegion(regionRepository.findById(comuna.getRegion().getID_region())
+            .orElseThrow(() -> new RuntimeException("Región no encontrada")));
+        return convertirADTO(comunaRepository.save(comuna));
     }
 
 
-    public Comuna actualizarComuna(Integer id, Comuna comunaActualizado) {
+    public ComunaDTO actualizarComuna(Integer id, Comuna comunaActualizado) {
         Comuna comuna = comunaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comuna no encontrada"));
 
         comuna.setComuna(comunaActualizado.getComuna());
 
-        comuna.setRegion(comunaActualizado.getRegion());
+        comuna.setRegion(regionRepository.findById(comunaActualizado.getRegion().getID_region())
+            .orElseThrow(() -> new RuntimeException("Región no encontrada")));
 
-        return comunaRepository.save(comuna);
+        return convertirADTO(comunaRepository.save(comuna));
     }
 
     private ComunaDTO convertirADTO(Comuna comuna) {
@@ -86,16 +93,17 @@ public class ComunaService {
         return dto;
     }
 
-    public Comuna patchComuna(Integer id, Comuna comuna) {
+    public ComunaDTO patchComuna(Integer id, Comuna comuna) {
         Comuna comuna2 = comunaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Comuna no encontrada"));
         if (comuna.getComuna() != null) {
             comuna2.setComuna(comuna.getComuna());
         }
         if (comuna.getRegion() != null) {
-            comuna2.setRegion(comuna.getRegion());
+            comuna2.setRegion(regionRepository.findById(comuna.getRegion().getID_region())
+                .orElseThrow(() -> new RuntimeException("Región no encontrada")));
         }
-        return comunaRepository.save(comuna2);
+        return convertirADTO(comunaRepository.save(comuna2));
     }
 }
 

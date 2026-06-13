@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.fullstack.SoftwareAviones.msubicacion.DTO.AerodromoDTO;
 import com.fullstack.SoftwareAviones.msubicacion.model.Aerodromo;
 import com.fullstack.SoftwareAviones.msubicacion.repository.AerodromoRepository;
+import com.fullstack.SoftwareAviones.msubicacion.repository.ComunaRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -19,6 +20,8 @@ public class AerodromoService {
     @Autowired
     private AerodromoRepository aerodromoRepository;
 
+    @Autowired
+    private ComunaRepository comunaRepository;
 
     public List<AerodromoDTO> obtenerTodos() {
         return aerodromoRepository.findAll().stream()
@@ -33,19 +36,22 @@ public class AerodromoService {
     }
 
     // guardar
-    public Aerodromo guardarAerodromo(Aerodromo aerodromo) {
-        return aerodromoRepository.save(aerodromo);
+    public AerodromoDTO guardarAerodromo(Aerodromo aerodromo) {
+        aerodromo.setComuna(comunaRepository.findById(aerodromo.getComuna().getID_comuna())
+            .orElseThrow(() -> new RuntimeException("Comuna no encontrada")));
+        return convertirADTO(aerodromoRepository.save(aerodromo));
     }
 
     //actualizar 
-    public Aerodromo actualizarAerodromo(Integer id, Aerodromo aerodromoActualizado) {
+    public AerodromoDTO actualizarAerodromo(Integer id, Aerodromo aerodromoActualizado) {
         Aerodromo aerodromo = aerodromoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aerodromo no encontrado"));
 
-        
         aerodromo.setNombre_aerodromo(aerodromoActualizado.getNombre_aerodromo());
-        aerodromo.setComuna(aerodromoActualizado.getComuna());
-            return aerodromoRepository.save(aerodromo);
+        aerodromo.setComuna(comunaRepository.findById(aerodromoActualizado.getComuna().getID_comuna())
+            .orElseThrow(() -> new RuntimeException("Comuna no encontrada")));
+
+        return convertirADTO(aerodromoRepository.save(aerodromo));
     }
 
     //eliminar 
@@ -67,25 +73,27 @@ public class AerodromoService {
         dto.setID_aerodromo(aerodromo.getID_aerodromo());
         dto.setNombre_aerodromo(aerodromo.getNombre_aerodromo());
 
-
         if (aerodromo.getComuna() != null) {
-            dto.setComuna(
-                    aerodromo.getComuna().getComuna()
-            );
+            dto.setComuna(aerodromo.getComuna().getComuna());
+
+            if (aerodromo.getComuna().getRegion() != null) {
+                dto.setRegion(aerodromo.getComuna().getRegion().getRegion());
+            }
         }
         return dto;
     }
 
-    public Aerodromo patchAerodromo(Integer id, Aerodromo aerodromo) {
+    public AerodromoDTO patchAerodromo(Integer id, Aerodromo aerodromo) {
         Aerodromo aerodromo2 = aerodromoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Aerodromo no encontrado"));
         if (aerodromo.getNombre_aerodromo() != null) {
             aerodromo2.setNombre_aerodromo(aerodromo.getNombre_aerodromo());
         }
         if (aerodromo.getComuna() != null) {
-            aerodromo2.setComuna(aerodromo.getComuna());
+            aerodromo2.setComuna(comunaRepository.findById(aerodromo.getComuna().getID_comuna())
+                .orElseThrow(() -> new RuntimeException("Comuna no encontrada")));
         }
-        return aerodromoRepository.save(aerodromo2);
+        return convertirADTO(aerodromoRepository.save(aerodromo2));
     }
 
 }

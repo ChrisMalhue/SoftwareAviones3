@@ -43,17 +43,15 @@ public class RegionService {
         }
     }
 
-    public Region guardarRegion(Region region) {
-        return regionRepository.save(region);
+    public RegionDTO guardarRegion(Region region) {
+        return convertirADTO(regionRepository.save(region));
     }
 
-    public Region actualizarRegion(Integer id, Region regionActualizada) {
+    public RegionDTO actualizarRegion(Integer id, Region regionActualizada) {
         Region region = regionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Región no encontrada"));
-
         region.setRegion(regionActualizada.getRegion());
-
-        return regionRepository.save(region);
+        return convertirADTO(regionRepository.save(region));
     }
 
     private RegionDTO convertirADTO(Region region) {
@@ -75,12 +73,12 @@ public class RegionService {
         
     }
 
-    public Region patchRegion(Integer id, Region region) {
+    public RegionDTO patchRegion(Integer id, Region region) {
         Region region2 = regionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Region no encontrada"));
         if (region.getRegion() != null) {
             region2.setRegion(region.getRegion());
         }
-        return regionRepository.save(region2);
+        return convertirADTO(regionRepository.save(region2));
     }
 }
