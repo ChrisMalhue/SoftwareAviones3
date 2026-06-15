@@ -1,0 +1,45 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: avion-service
+              uri: lb://msavion
+              predicates:
+                - Path=/api/v1/aviones/**, /api/v1/fabricantes/**, /api/v1/origenes/**, /api/v1/tipos/**, /msavion/api-docs/**
+
+            - id: piloto-service
+              uri: lb://mspiloto
+              predicates:
+                - Path=/api/v1/pilotos/**, /api/v1/cursos/**, /api/v1/cursos_piloto/**, /mspiloto/api-docs/**
+
+            - id: ubicacion-service
+              uri: lb://msubicacion
+              predicates:
+                - Path=/api/v1/regiones/**, /api/v1/comunas/**, /api/v1/aerodromos/**, /msubicacion/api-docs/**
+
+            - id: vuelo-service
+              uri: lb://msvuelo
+              predicates:
+                - Path=/api/v1/vuelos/**, /api/v1/avionesPiloto/**, /msvuelo/api-docs/**
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui/index.html
+    urls:
+      - name: Microservicio Avion
+        url: /msavion/api-docs
+      - name: Microservicio Piloto
+        url: /mspiloto/api-docs
+      - name: Microservicio Ubicacion
+        url: /msubicacion/api-docs
+      - name: Microservicio Vuelo
+        url: /msvuelo/api-docs
+  api-docs:
+    enabled: true
