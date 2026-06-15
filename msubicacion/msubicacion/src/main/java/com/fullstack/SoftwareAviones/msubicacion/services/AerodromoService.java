@@ -11,10 +11,11 @@ import com.fullstack.SoftwareAviones.msubicacion.repository.AerodromoRepository;
 import com.fullstack.SoftwareAviones.msubicacion.repository.ComunaRepository;
 
 import jakarta.transaction.Transactional;
-
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class AerodromoService {
 
     @Autowired
@@ -24,12 +25,14 @@ public class AerodromoService {
     private ComunaRepository comunaRepository;
 
     public List<AerodromoDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Aerodromos");
         return aerodromoRepository.findAll().stream()
             .map(this::convertirADTO)
             .toList();
     }
     //DTO
     public AerodromoDTO buscarPorId(Integer id) {
+        log.info("Buscando Aerodromo Por ID: {}", id);
         Aerodromo aerodromo = aerodromoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("¡aerodromo no encontrado!"));
         return convertirADTO(aerodromo);
@@ -37,6 +40,7 @@ public class AerodromoService {
 
     // guardar
     public AerodromoDTO guardarAerodromo(Aerodromo aerodromo) {
+        log.info("Registrando Nuevo Aerodromo");
         aerodromo.setComuna(comunaRepository.findById(aerodromo.getComuna().getID_comuna())
             .orElseThrow(() -> new RuntimeException("Comuna no encontrada")));
         return convertirADTO(aerodromoRepository.save(aerodromo));
@@ -44,6 +48,7 @@ public class AerodromoService {
 
     //actualizar 
     public AerodromoDTO actualizarAerodromo(Integer id, Aerodromo aerodromoActualizado) {
+        log.info("Actualizando Informacion Del Aerodromo con ID: {}", id);
         Aerodromo aerodromo = aerodromoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Aerodromo no encontrado"));
 
@@ -56,6 +61,7 @@ public class AerodromoService {
 
     //eliminar 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Aerodromo Del Sistema");
         try {
             Aerodromo aerodromo = aerodromoRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El Aerodromo con ID " + id + " no existe."));

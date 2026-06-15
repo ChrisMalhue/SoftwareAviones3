@@ -14,9 +14,11 @@ import com.fullstack.SoftwareAviones.msvuelo.model.Aviones;
 import com.fullstack.SoftwareAviones.msvuelo.repository.AvionesRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class AvionesService {
 
     @Autowired
@@ -32,22 +34,26 @@ public class AvionesService {
     private String avionUrl;
 
     public List<AvionesDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Aviones");
         return avionesRepository.findAll().stream()
                 .map(this::convertirADTO)
                 .toList();
     }
 
     public AvionesDTO buscarPorId(Integer id) {
+        log.info("Buscando El Avion POr ID: {}", id);
         Aviones aviones = avionesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡Registro no encontrado!"));
         return convertirADTO(aviones);
     }
 
     public AvionesDTO guardarAviones(Aviones aviones) {
+        log.info("Registrando Nuevo Avion");
         return convertirADTO(avionesRepository.save(aviones));
     }
 
     public AvionesDTO actualizarAviones(Integer id, Aviones avionesActualizado) {
+        log.info("Actualizando Informacion Del Avion con ID: {}", id);
         Aviones aviones = avionesRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Registro no encontrado"));
         aviones.setIdPiloto(avionesActualizado.getIdPiloto());
@@ -56,6 +62,7 @@ public class AvionesService {
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Avion Del Sistema");
         try {
             Aviones aviones = avionesRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El registro con ID " + id + " no existe."));

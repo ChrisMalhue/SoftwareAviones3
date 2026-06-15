@@ -12,35 +12,42 @@ import com.fullstack.SoftwareAviones.msavion.model.Tipo;
 import com.fullstack.SoftwareAviones.msavion.repository.TipoRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class TipoService {
 
     @Autowired
     private TipoRepository tipoRepository;
 
     public List<TipoDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Tipos");
         return tipoRepository.findAll().stream()
             .map(this::convertirADTO)
             .toList();
     }
 
     public TipoDTO buscarPorId(Integer id) {
+        log.info("Buscando Tipo Por ID: {}", id);
         Tipo tipo = tipoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("¡Tipo no encontrado!"));
         return convertirADTO(tipo);
     }
 
     public TipoDTO guardarTipo(Tipo tipo) {
+        log.info("Registrando Nuevo Tipo");
         return convertirADTO(tipoRepository.save(tipo));
     }
 
     public Tipo buscarID_Tipo(Integer id){
+        log.info("Buscando Tipo Por ID: {}", id);
         return tipoRepository.findById(id).orElse(null);
     }
     //actualizar 
     public TipoDTO actualizarTipo(Integer id, Tipo tipoActualizado) {
+        log.info("Actualizando Informacion Del Tipo con ID: {}", id);
         Tipo tipo = tipoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));
         tipo.setTipo(tipoActualizado.getTipo());
@@ -48,6 +55,7 @@ public class TipoService {
     }
     //eliminar 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Tipo Del Sistema");
         try {
             Tipo tipo = tipoRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El Tipo con ID " + id + " no existe."));

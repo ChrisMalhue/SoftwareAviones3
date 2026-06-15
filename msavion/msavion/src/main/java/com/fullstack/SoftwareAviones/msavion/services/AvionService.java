@@ -14,9 +14,11 @@ import com.fullstack.SoftwareAviones.msavion.repository.OrigenRepository;
 import com.fullstack.SoftwareAviones.msavion.repository.TipoRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class AvionService {
 
     @Autowired
@@ -32,12 +34,14 @@ public class AvionService {
     private TipoRepository tipoRepository;
 
     public List<AvionDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Aviones");
         return avionRepository.findAll().stream()
                 .map(this::convertirADTO)
                 .toList();
     }
 
     public AvionDTO buscarPorId(Integer id) {
+        log.info("Buscando Avión Por ID: {}", id);
         Avion avion = avionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡Avión no encontrado!"));
 
@@ -45,6 +49,7 @@ public class AvionService {
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Avión Del Sistema");
         try {
             Avion avion = avionRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException(
@@ -112,6 +117,7 @@ public class AvionService {
     }
 
     public AvionDTO guardarAvion(Avion avion) {
+        log.info("Registrando Nuevo Avion");
 
         avion.setFabricante(fabricanteRepository.findById(avion.getFabricante().getId_fabricante())
         .orElseThrow(() -> new RuntimeException("Fabricante no encontrado")));
@@ -165,6 +171,7 @@ public class AvionService {
     }
 
     public AvionDTO actualizarAvion(Integer id, Avion avionActualizado) {
+        log.info("Actualizando Informacion Del Avión con ID: {}", id);
         Avion avion = avionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Avión no encontrado"));
 
@@ -200,6 +207,7 @@ public class AvionService {
     }
 
     public List<AvionDTO> buscarPorMatricula(String matricula){
+        log.info("Buscando Avión Por Matrícula: {}", matricula);
         return avionRepository.buscarPorMatricula(matricula).stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -220,6 +228,7 @@ public class AvionService {
     }
 
     public AvionDTO patchAvion(Integer id, Avion avion) {
+        log.info("Actualizando Informacion Del Avión con ID: {}", id);
         Avion avion2 = avionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Avion no encontrado"));
 

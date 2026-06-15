@@ -12,21 +12,25 @@ import com.fullstack.SoftwareAviones.mspiloto.model.Cursos;
 import com.fullstack.SoftwareAviones.mspiloto.repository.CursoRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class CursoService {
 
     @Autowired
     private CursoRepository cursoRepository;
 
     public List<CursoDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Cursos");
         return cursoRepository.findAll().stream()
                 .map(this::convertirADTO)
                 .toList();
     }
 
     public CursoDTO buscarPorId(Integer id) {
+        log.info("Buscando Curso Por ID: {}", id);
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("¡Curso no encontrado!"));
 
@@ -34,6 +38,7 @@ public class CursoService {
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Curso Del Sistema");
         try {
 
             Curso curso = cursoRepository.findById(id)
@@ -52,10 +57,12 @@ public class CursoService {
     }
 
     public CursoDTO guardarCurso(Curso curso) {
+        log.info("Registrando Un Nuevo Curso");
         return convertirADTO(cursoRepository.save(curso));
     }
 
     public CursoDTO actualizarCurso(Integer id, Curso cursoActualizado) {
+        log.info("Actualizando Informacion Del Curso con ID: {}", id);
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
         curso.setNombre_curso(cursoActualizado.getNombre_curso());

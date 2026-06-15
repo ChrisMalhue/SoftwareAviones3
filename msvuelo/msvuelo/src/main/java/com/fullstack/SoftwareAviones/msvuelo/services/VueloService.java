@@ -15,9 +15,11 @@ import com.fullstack.SoftwareAviones.msvuelo.model.Vuelo;
 import com.fullstack.SoftwareAviones.msvuelo.repository.VueloRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class VueloService {
 
     @Autowired
@@ -36,18 +38,21 @@ public class VueloService {
     private String ubicacionUrl;
 
     public List<VueloDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Vuelos");
         return vueloRepository.findAll().stream()
             .map(this::convertirADTO)
             .toList();
     }
 
     public VueloDTO buscarPorId(Integer id) {
+        log.info("Buscando Su Vuelo Por ID: {}", id);
         Vuelo vuelo = vueloRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("¡Vuelo no encontrado!"));
         return convertirADTO(vuelo);
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Vuelo Del Sistema");
         try {
             Vuelo vuelo = vueloRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El vuelo con ID " + id + " no existe."));
@@ -59,10 +64,12 @@ public class VueloService {
     }
 
     public VueloDTO agregarVuelo(Vuelo vuelo) {
+        log.info("Registrando Nuevo Vuelo");
         return convertirADTO(vueloRepository.save(vuelo));
     }
 
     public VueloDTO actualizarVuelo(Integer id, Vuelo vueloActualizado) {
+        log.info("Actualizando Informacion Del Vuelo con ID: {}", id);
         Vuelo vuelo = vueloRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vuelo no encontrado"));
 

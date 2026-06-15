@@ -13,10 +13,11 @@ import com.fullstack.SoftwareAviones.msubicacion.repository.ComunaRepository;
 import com.fullstack.SoftwareAviones.msubicacion.repository.RegionRepository;
 
 import jakarta.transaction.Transactional;
-
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class ComunaService {
 
     @Autowired
@@ -26,18 +27,21 @@ public class ComunaService {
     private RegionRepository regionRepository;
 
     public List<ComunaDTO> obtenerTodos(){
+        log.info("Obteniendo Todos los Datos De Comunas");
         return comunaRepository.findAll().stream()
             .map(this::convertirADTO)
             .toList();
     }
 
     public ComunaDTO buscarPorId(Integer id) {
+        log.info("Buscando Comuna Por ID: {}", id);
         Comuna comuna = comunaRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("¡Comuna no encontrada!"));
         return convertirADTO(comuna);
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Una Comuna Del Sistema");
         try {
             Comuna comuna = comunaRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! La Comuna con ID " + id + " no existe."));
@@ -49,6 +53,7 @@ public class ComunaService {
     }
 
     public ComunaDTO guardarComuna(Comuna comuna) {
+        log.info("Registrando Una Nueva Comuna");
         comuna.setRegion(regionRepository.findById(comuna.getRegion().getID_region())
             .orElseThrow(() -> new RuntimeException("Región no encontrada")));
         return convertirADTO(comunaRepository.save(comuna));
@@ -56,6 +61,7 @@ public class ComunaService {
 
 
     public ComunaDTO actualizarComuna(Integer id, Comuna comunaActualizado) {
+        log.info("Actualizando Informacion De La Comuna con ID: {}", id);
         Comuna comuna = comunaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Comuna no encontrada"));
 

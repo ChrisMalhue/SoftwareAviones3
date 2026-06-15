@@ -12,32 +12,38 @@ import com.fullstack.SoftwareAviones.msavion.model.Origen;
 import com.fullstack.SoftwareAviones.msavion.repository.OrigenRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class OrigenService {
 
     @Autowired
     private OrigenRepository origenRepository;
 
     public List<OrigenDTO> obtenerTodos() {
+        log.info("Obteniendo Todos los Datos De Orígenes");
         return origenRepository.findAll().stream()
         .map(this::convertirADTO)
         .toList();
     }
 
     public OrigenDTO buscarPorId(Integer id) {
+        log.info("Buscando Origen Por ID: {}", id);
         Origen origen = origenRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("¡Origen no encontrado!"));
         return convertirADTO(origen);
     }
     
     public OrigenDTO guardarOrigen(Origen origen){
+        log.info("Registrando Nuevo Origen");
         return convertirADTO(origenRepository.save(origen));
     }
 
     //actualizar 
     public OrigenDTO actualizarOrigen(Integer id, Origen origenActualizado) {
+        log.info("Actualizando Informacion Del Origen con ID: {}", id);
         Origen origen = origenRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Origen no encontrado"));
         origen.setPais_origen(origenActualizado.getPais_origen());
@@ -46,6 +52,7 @@ public class OrigenService {
 
     //eliminar 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Origen Del Sistema");
         try {
             Origen origen = origenRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El Origen con ID " + id + " no existe."));
@@ -75,6 +82,7 @@ public class OrigenService {
     }
 
     public OrigenDTO patchOrigen(Integer id, Origen origen) {
+        log.info("Actualizando Informacion Del Origen con ID: {}", id);
         Origen origen2 = origenRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Origen no encontrado"));
         if (origen.getPais_origen() != null) {

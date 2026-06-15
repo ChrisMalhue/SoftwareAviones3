@@ -11,27 +11,32 @@ import com.fullstack.SoftwareAviones.mspiloto.model.Piloto;
 import com.fullstack.SoftwareAviones.mspiloto.repository.PilotoRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
+@Slf4j
 public class PilotoService {
 
     @Autowired
     private PilotoRepository pilotoRepository;
 
     public List<PilotoDTO> obtenerTodos() {
-    return pilotoRepository.findAll().stream()
-            .map(this::convertirADTO)
-            .toList();
+        log.info("Obteniendo Todos los Datos De Pilotos");
+        return pilotoRepository.findAll().stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 
     public PilotoDTO buscarPorId(Integer id) {
-    Piloto piloto = pilotoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("¡Piloto no encontrado!"));
+        log.info("Buscando Piloto Por ID: {}", id);
+        Piloto piloto = pilotoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("¡Piloto no encontrado!"));
         return convertirADTO(piloto);
     }
 
     public String eliminar(Integer id) {
+        log.info("Eliminando Un Piloto Del Sistema");
         try {
             Piloto piloto = pilotoRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("¡Imposible eliminar! El piloto con ID " + id + " no existe."));
@@ -43,10 +48,12 @@ public class PilotoService {
     }
 
     public PilotoDTO guardarPiloto(Piloto piloto) {
+        log.info("Registrando Un Nuevo Piloto");
         return convertirADTO(pilotoRepository.save(piloto));
     }
 
     public PilotoDTO actualizarPiloto(Integer id, Piloto pilotoActualizado) {
+        log.info("Actualizando Informacion Del Piloto con ID: {}", id);
         Piloto piloto = pilotoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Piloto no encontrado"));
 
