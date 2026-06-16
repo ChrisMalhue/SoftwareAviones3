@@ -4,8 +4,6 @@ server:
 springdoc:
   api-docs:
     path: /msubicacion/api-docs
-  swagger-ui:
-    path: /msubicacion/swagger-ui/index.html
 
 spring:
   application:

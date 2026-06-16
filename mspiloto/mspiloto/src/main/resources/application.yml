@@ -4,8 +4,6 @@ server:
 springdoc:
   api-docs:
     path: /mspiloto/api-docs
-  swagger-ui:
-    path: /mspiloto/swagger-ui/index.html
 
 spring:
   application:

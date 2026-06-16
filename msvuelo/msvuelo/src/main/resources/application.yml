@@ -4,8 +4,6 @@ server:
 springdoc:
   api-docs:
     path: /msvuelo/api-docs
-  swagger-ui:
-    path: /msvuelo/swagger-ui/index.html
 
 spring:
   application:
