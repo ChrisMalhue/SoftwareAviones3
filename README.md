@@ -1,4 +1,3 @@
-[JSONS USAR POSTMAN.txt](https://github.com/user-attachments/files/28920467/JSONS.USAR.POSTMAN.txt)
 MSAVION:
 
 json post avión: 
@@ -110,3 +109,11 @@ LINK SWAGGER: http://localhost:8084/doc/swagger-ui/index.html
 URLS:
 http://localhost:8084/api/v1/vuelos
 http://localhost:8084/api/v1/avionesPiloto
+
+----------------------------------------------------------------------
+
+SWAGGER GENERAL GATEWAY: http://localhost:8080/swagger-ui/index.html
+
+EUREKA: http://localhost:8761
+
+----------------------------------------------------------------------
