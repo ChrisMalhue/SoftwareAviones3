@@ -47,9 +47,12 @@ spring:
     username: root
     password: ''
     driverClassName: com.mysql.cj.jdbc.Driver
+  flyway:
+    enabled: false
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
+    show-sql: true
 
 ---
 spring:
