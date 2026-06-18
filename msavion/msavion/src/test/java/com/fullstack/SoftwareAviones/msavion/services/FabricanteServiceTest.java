@@ -80,6 +80,15 @@ public class FabricanteServiceTest {
     }
 
     @Test
+    public void testActualizarFabricanteNoExiste() {
+        when(fabricanteRepository.findById(99)).thenReturn(Optional.empty());
+        Fabricante actualizado = new Fabricante();
+        actualizado.setNombre_fabricante("Airbus");
+        actualizado.setAviones(List.of());
+        assertThrows(RuntimeException.class, () -> fabricanteService.actualizarFabricante(99, actualizado));
+    }
+
+    @Test
     public void testPatchFabricante() {
         Fabricante existente = createFabricante();
         Fabricante patchData = new Fabricante();
@@ -92,6 +101,14 @@ public class FabricanteServiceTest {
         var resultado = fabricanteService.patchFabricante(1, patchData);
         assertNotNull(resultado);
         assertEquals("Airbus", resultado.getNombre_fabricante());
+    }
+
+    @Test
+    public void testPatchFabricanteNoExiste() {
+        when(fabricanteRepository.findById(99)).thenReturn(Optional.empty());
+        Fabricante patchData = new Fabricante();
+        patchData.setNombre_fabricante("Airbus");
+        assertThrows(RuntimeException.class, () -> fabricanteService.patchFabricante(99, patchData));
     }
 
     @Test
