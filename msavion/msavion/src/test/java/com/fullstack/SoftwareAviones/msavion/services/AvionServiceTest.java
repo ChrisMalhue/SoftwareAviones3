@@ -93,6 +93,16 @@ public class AvionServiceTest {
         assertEquals(1, resultado.size());
         assertEquals("CC-ABC", resultado.get(0).getMatricula());
     }
+
+    @Test
+    public void testBuscarPorId() {
+        Avion avion = createAvion(TipoAvion.PASAJERO);
+        when(avionRepository.findById(1)).thenReturn(Optional.of(avion));
+        var resultado = avionService.buscarPorId(1);
+        assertNotNull(resultado);
+        assertEquals("CC-ABC", resultado.getMatricula());
+        assertEquals("PASAJERO", resultado.getTipo());
+    }
     
     @Test
     public void testBuscarPorIdNoExiste() {
