@@ -117,3 +117,9 @@ SWAGGER GENERAL GATEWAY: http://localhost:8080/swagger-ui/index.html
 EUREKA: http://localhost:8761
 
 ----------------------------------------------------------------------
+                                AVANCES
+----------------------------------------------------------------------
+
+Cristian = Hateoas, Swagger, Eureka, Gateway, Tests de: msavion, mspiloto, msubicacion
+
+
