@@ -15,14 +15,6 @@ spring:
     show-sql: true
   profiles:
     active: dev
-
-services:
-  ubicacion:
-    url: http://localhost:8081
-  avion:
-    url: http://localhost:8082
-  piloto:
-    url: http://localhost:8083
   
 eureka:
   client:

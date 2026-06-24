@@ -3,9 +3,8 @@ package com.fullstack.SoftwareAviones.msvuelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fullstack.SoftwareAviones.msvuelo.DTO.VueloDTO;
 import com.fullstack.SoftwareAviones.msvuelo.DTO.PilotoDTO;
@@ -26,16 +25,7 @@ public class VueloService {
     private VueloRepository vueloRepository;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Value("${services.piloto.url}")
-    private String pilotoUrl;
-
-    @Value("${services.avion.url}")
-    private String avionUrl;
-
-    @Value("${services.ubicacion.url}")
-    private String ubicacionUrl;
+    private WebClient.Builder webClientBuilder;
 
     public List<VueloDTO> obtenerTodos() {
         log.info("Obteniendo Todos los Datos De Vuelos");
@@ -115,41 +105,41 @@ public class VueloService {
         dto.setIdAvion(vuelo.getIdAvion());
         dto.setIdAerodromo(vuelo.getIdAerodromo());
 
-        // Llama a ms-piloto
+        // llamada a ms-piloto
         try {
-            PilotoDTO piloto = restTemplate.getForObject(
-                pilotoUrl + "/api/v1/pilotos/" + vuelo.getIdPiloto(),
-                PilotoDTO.class
-            );
-            if (piloto != null) {
-                dto.setNombrePiloto(piloto.getNombre());
-            }
+            PilotoDTO piloto = webClientBuilder.build()
+                .get()
+                .uri("http://mspiloto/api/v1/pilotos/" + vuelo.getIdPiloto())
+                .retrieve()
+                .bodyToMono(PilotoDTO.class)
+                .block();
+            if (piloto != null) dto.setNombrePiloto(piloto.getNombre());
         } catch (Exception e) {
             dto.setNombrePiloto("Piloto no disponible");
         }
 
-        // Llama a ms-avion
+        // llamada a ms-avion
         try {
-            AvionDTO avion = restTemplate.getForObject(
-                avionUrl + "/api/v1/aviones/" + vuelo.getIdAvion(),
-                AvionDTO.class
-            );
-            if (avion != null) {
-                dto.setModeloAvion(avion.getModelo());
-            }
+            AvionDTO avion = webClientBuilder.build()
+                .get()
+                .uri("http://msavion/api/v1/aviones/" + vuelo.getIdAvion())
+                .retrieve()
+                .bodyToMono(AvionDTO.class)
+                .block();
+            if (avion != null) dto.setModeloAvion(avion.getModelo());
         } catch (Exception e) {
             dto.setModeloAvion("Avion no disponible");
         }
 
-        // Llama a ms-ubicacion
+        // llamada a ms-ubicacion
         try {
-            AerodromoDTO aerodromo = restTemplate.getForObject(
-                ubicacionUrl + "/api/v1/aerodromos/" + vuelo.getIdAerodromo(),
-                AerodromoDTO.class
-            );
-            if (aerodromo != null) {
-                dto.setNombreAerodromo(aerodromo.getNombre_aerodromo());
-            }
+            AerodromoDTO aerodromo = webClientBuilder.build()
+                .get()
+                .uri("http://msubicacion/api/v1/aerodromos/" + vuelo.getIdAerodromo())
+                .retrieve()
+                .bodyToMono(AerodromoDTO.class)
+                .block();
+            if (aerodromo != null) dto.setNombreAerodromo(aerodromo.getNombre_aerodromo());
         } catch (Exception e) {
             dto.setNombreAerodromo("Aerodromo no disponible");
         }
