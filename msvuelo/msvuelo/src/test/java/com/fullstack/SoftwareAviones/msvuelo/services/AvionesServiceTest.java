@@ -7,16 +7,21 @@ import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Optional;
 
+import net.datafaker.Faker;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fullstack.SoftwareAviones.msvuelo.DTO.AvionDTO;
 import com.fullstack.SoftwareAviones.msvuelo.DTO.PilotoDTO;
 import com.fullstack.SoftwareAviones.msvuelo.model.Aviones;
 import com.fullstack.SoftwareAviones.msvuelo.repository.AvionesRepository;
+
+import reactor.core.publisher.Mono;
 
 @SpringBootTest
 public class AvionesServiceTest {
@@ -28,59 +33,101 @@ public class AvionesServiceTest {
     private AvionesRepository avionesRepository;
 
     @MockitoBean
-    private RestTemplate restTemplate;
+    private WebClient.Builder webClientBuilder;
+
+    private final Faker faker = new Faker();
+
+    // mocks internos de la cadena WebClient
+    private WebClient webClient;
+    private WebClient.RequestHeadersUriSpec<?> requestHeadersUriSpec;
+    private WebClient.RequestHeadersSpec<?> requestHeadersSpec;
+    private WebClient.ResponseSpec responseSpec;
+
+    @BeforeEach
+    @SuppressWarnings("unchecked")
+    public void setUp() {
+        webClient             = mock(WebClient.class);
+        requestHeadersUriSpec = mock(WebClient.RequestHeadersUriSpec.class);
+        requestHeadersSpec    = mock(WebClient.RequestHeadersSpec.class);
+        responseSpec          = mock(WebClient.ResponseSpec.class);
+
+        when(webClientBuilder.build()).thenReturn(webClient);
+        doReturn(requestHeadersUriSpec).when(webClient).get();
+        doReturn(requestHeadersSpec).when(requestHeadersUriSpec).uri(anyString());
+        doReturn(responseSpec).when(requestHeadersSpec).retrieve();
+    }
+
+    // aca parte la zona de los create
 
     private Aviones createAviones() {
         Aviones aviones = new Aviones();
         aviones.setID_aviones(1);
-        aviones.setIdPiloto(10);
-        aviones.setIdAvion(20);
+        aviones.setIdPiloto(faker.number().numberBetween(1, 100));
+        aviones.setIdAvion(faker.number().numberBetween(1, 100));
         return aviones;
     }
 
-    private PilotoDTO createPiloto() {
+    private PilotoDTO createPiloto(int idPiloto) {
         PilotoDTO piloto = new PilotoDTO();
-        piloto.setID_piloto(10);
-        piloto.setNombre("Juan");
-        piloto.setApellido("Perez");
+        piloto.setID_piloto(idPiloto);
+        piloto.setNombre(faker.regexify("[A-Za-z]{3,10}"));
+        piloto.setApellido(faker.regexify("[A-Za-z]{3,10}"));
         return piloto;
     }
 
-    private AvionDTO createAvion() {
+    private AvionDTO createAvion(int idAvion) {
         AvionDTO avion = new AvionDTO();
-        avion.setID_avion(20);
-        avion.setModelo("Boeing 737");
-        avion.setMatricula("CC-ABC");
+        avion.setID_avion(idAvion);
+        avion.setModelo(faker.regexify("[A-Za-z]{5,10}-[0-9]{3}"));
+        avion.setMatricula(faker.regexify("[A-Z]{2}-[A-Z]{3}"));
         return avion;
     }
 
+    // helper para configurar la cadena WebClient con las respuestas de piloto y avion
+    @SuppressWarnings("unchecked")
+    private void mockWebClient(PilotoDTO piloto, AvionDTO avion) {
+        when(responseSpec.bodyToMono(PilotoDTO.class))
+                .thenReturn(piloto != null ? Mono.just(piloto) : Mono.error(new RuntimeException("Servicio mspiloto caido")));
+        when(responseSpec.bodyToMono(AvionDTO.class))
+                .thenReturn(avion != null ? Mono.just(avion) : Mono.error(new RuntimeException("Servicio msavion caido")));
+    }
+
+    // aca parten los test
+
     @Test
     public void testObtenerTodos() {
-        when(avionesRepository.findAll()).thenReturn(List.of(createAviones()));
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class))).thenReturn(createPiloto());
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class))).thenReturn(createAvion());
+        Aviones aviones = createAviones();
+        PilotoDTO piloto = createPiloto(aviones.getIdPiloto());
+        AvionDTO avion   = createAvion(aviones.getIdAvion());
+
+        when(avionesRepository.findAll()).thenReturn(List.of(aviones));
+        mockWebClient(piloto, avion);
 
         var resultado = avionesService.obtenerTodos();
 
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("Juan", resultado.get(0).getNombrePiloto());
-        assertEquals("Boeing 737", resultado.get(0).getModeloAvion());
+        assertEquals(piloto.getNombre(), resultado.get(0).getNombrePiloto());
+        assertEquals(avion.getModelo(), resultado.get(0).getModeloAvion());
     }
 
     @Test
     public void testBuscarPorId() {
-        when(avionesRepository.findById(1)).thenReturn(Optional.of(createAviones()));
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class))).thenReturn(createPiloto());
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class))).thenReturn(createAvion());
+        Aviones aviones = createAviones();
+        PilotoDTO piloto = createPiloto(aviones.getIdPiloto());
+        AvionDTO avion   = createAvion(aviones.getIdAvion());
+
+        when(avionesRepository.findById(1)).thenReturn(Optional.of(aviones));
+        mockWebClient(piloto, avion);
 
         var resultado = avionesService.buscarPorId(1);
 
         assertNotNull(resultado);
-        assertEquals(10, resultado.getIdPiloto());
-        assertEquals(20, resultado.getIdAvion());
-        assertEquals("Juan", resultado.getNombrePiloto());
-        assertEquals("Boeing 737", resultado.getModeloAvion());
+        assertEquals(aviones.getIdPiloto(), resultado.getIdPiloto());
+        assertEquals(aviones.getIdAvion(), resultado.getIdAvion());
+        assertEquals(piloto.getNombre(), resultado.getNombrePiloto());
+        assertEquals(avion.getModelo(), resultado.getModeloAvion());
+        verify(avionesRepository, times(1)).findById(1);
     }
 
     @Test
@@ -91,64 +138,73 @@ public class AvionesServiceTest {
 
     @Test
     public void testBuscarPorIdPilotoNoDisponible() {
-        when(avionesRepository.findById(1)).thenReturn(Optional.of(createAviones()));
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class)))
-                .thenThrow(new RuntimeException("Servicio mspiloto caido"));
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class))).thenReturn(createAvion());
+        Aviones aviones = createAviones();
+        AvionDTO avion  = createAvion(aviones.getIdAvion());
+
+        when(avionesRepository.findById(1)).thenReturn(Optional.of(aviones));
+        mockWebClient(null, avion); // piloto null → lanza excepcion → fallback
 
         var resultado = avionesService.buscarPorId(1);
 
         assertNotNull(resultado);
         assertEquals("Piloto no disponible", resultado.getNombrePiloto());
-        assertEquals("Boeing 737", resultado.getModeloAvion());
+        assertEquals(avion.getModelo(), resultado.getModeloAvion());
     }
 
     @Test
     public void testBuscarPorIdAvionNoDisponible() {
-        when(avionesRepository.findById(1)).thenReturn(Optional.of(createAviones()));
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class))).thenReturn(createPiloto());
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class)))
-                .thenThrow(new RuntimeException("Servicio msavion caido"));
+        Aviones aviones  = createAviones();
+        PilotoDTO piloto = createPiloto(aviones.getIdPiloto());
+
+        when(avionesRepository.findById(1)).thenReturn(Optional.of(aviones));
+        mockWebClient(piloto, null); // avion null → lanza excepcion → fallback
 
         var resultado = avionesService.buscarPorId(1);
 
         assertNotNull(resultado);
-        assertEquals("Juan", resultado.getNombrePiloto());
+        assertEquals(piloto.getNombre(), resultado.getNombrePiloto());
         assertEquals("Avion no disponible", resultado.getModeloAvion());
     }
 
     @Test
     public void testGuardarAviones() {
-        Aviones aviones = createAviones();
+        Aviones aviones  = createAviones();
+        PilotoDTO piloto = createPiloto(aviones.getIdPiloto());
+        AvionDTO avion   = createAvion(aviones.getIdAvion());
+
         when(avionesRepository.save(any(Aviones.class))).thenReturn(aviones);
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class))).thenReturn(createPiloto());
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class))).thenReturn(createAvion());
+        mockWebClient(piloto, avion);
 
         var resultado = avionesService.guardarAviones(aviones);
 
         assertNotNull(resultado);
-        assertEquals(10, resultado.getIdPiloto());
-        assertEquals(20, resultado.getIdAvion());
+        assertEquals(aviones.getIdPiloto(), resultado.getIdPiloto());
+        assertEquals(aviones.getIdAvion(), resultado.getIdAvion());
         verify(avionesRepository, times(1)).save(aviones);
     }
 
     @Test
     public void testActualizarAviones() {
-        Aviones existente = createAviones();
+        Aviones existente  = createAviones();
         Aviones actualizado = createAviones();
-        actualizado.setIdPiloto(11);
-        actualizado.setIdAvion(21);
+        int nuevoIdPiloto  = faker.number().numberBetween(101, 200);
+        int nuevoIdAvion   = faker.number().numberBetween(101, 200);
+        actualizado.setIdPiloto(nuevoIdPiloto);
+        actualizado.setIdAvion(nuevoIdAvion);
+
+        PilotoDTO piloto = createPiloto(nuevoIdPiloto);
+        AvionDTO avion   = createAvion(nuevoIdAvion);
 
         when(avionesRepository.findById(1)).thenReturn(Optional.of(existente));
         when(avionesRepository.save(any(Aviones.class))).thenReturn(actualizado);
-        when(restTemplate.getForObject(anyString(), eq(PilotoDTO.class))).thenReturn(createPiloto());
-        when(restTemplate.getForObject(anyString(), eq(AvionDTO.class))).thenReturn(createAvion());
+        mockWebClient(piloto, avion);
 
         var resultado = avionesService.actualizarAviones(1, actualizado);
 
         assertNotNull(resultado);
-        assertEquals(11, resultado.getIdPiloto());
-        assertEquals(21, resultado.getIdAvion());
+        assertEquals(nuevoIdPiloto, resultado.getIdPiloto());
+        assertEquals(nuevoIdAvion, resultado.getIdAvion());
+        verify(avionesRepository, times(1)).save(any(Aviones.class));
     }
 
     @Test
