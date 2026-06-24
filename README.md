@@ -121,5 +121,5 @@ EUREKA: http://localhost:8761
 ----------------------------------------------------------------------
 
 Cristian = Hateoas, Swagger, Eureka, Gateway, Tests de: msavion, mspiloto, msubicacion
-
+Martin = msvuelo, Tests, Services(msvuelo), Logs(msavion, ,mspiloto, msubicacion, msvuelo)
 
