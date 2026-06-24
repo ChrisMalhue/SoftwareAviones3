@@ -1,10 +1,13 @@
 package com.fullstack.SoftwareAviones.msavion.services;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.Optional;
+
+import net.datafaker.Faker;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +40,17 @@ public class AvionServiceTest {
     private OrigenRepository origenRepository;
 
     @MockitoBean
-    private TipoRepository tipoRepository;    
-        
+    private TipoRepository tipoRepository;
+
+    private final Faker faker = new Faker();
+
+    // aca parte la zona de los create 
+
     private Fabricante createFabricante() {
         Fabricante fabricante = new Fabricante();
         fabricante.setId_fabricante(1);
-        fabricante.setNombre_fabricante("Boeing");
+        // regexify garantiza exactamente el largo y formato que necesitamos (5-15 chars, solo letras)
+        fabricante.setNombre_fabricante(faker.regexify("[A-Za-z]{5,10}"));
         fabricante.setAviones(List.of());
         return fabricante;
     }
@@ -50,7 +58,8 @@ public class AvionServiceTest {
     private Origen createOrigen() {
         Origen origen = new Origen();
         origen.setId_origen(1);
-        origen.setPais_origen("USA");
+        // tuve que buscar el regefixy para que vaya a juego con los patterns pa que no piense algo exotico D:
+        origen.setPais_origen(faker.regexify("[A-Za-z]{3,10}"));
         origen.setAviones(List.of());
         return origen;
     }
@@ -62,74 +71,85 @@ public class AvionServiceTest {
         tipo.setAviones(List.of());
         return tipo;
     }
-    
+
     private Avion createAvion(TipoAvion tipoAvion) {
         Avion avion = new Avion();
         avion.setID_avion(1);
-        avion.setMatricula("CC-ABC");
-        avion.setMarca("Boeing");
-        avion.setModelo("737");
-        avion.setEnvergadura_metros(35.0);
-        avion.setCapacidad_combustible(20000.0);
+        avion.setMatricula(faker.regexify("[A-Z]{2}-[A-Z]{3}"));
+        avion.setMarca(faker.regexify("[A-Za-z]{5,15}"));
+        avion.setModelo(faker.regexify("[A-Za-z]{3}-[0-9]{3}"));
+        avion.setEnvergadura_metros(faker.number().randomDouble(1, 10, 80));
+        avion.setCapacidad_combustible(faker.number().randomDouble(0, 5000, 100000));
         avion.setFabricante(createFabricante());
         avion.setOrigen(createOrigen());
         avion.setTipo(createTipo(tipoAvion));
 
         switch (tipoAvion) {
-            case PASAJERO -> avion.setCapacidad_pasajero(180);
-            case GUERRA -> avion.setAlcance_km(3000.0);
-            case CARGA -> avion.setCapacidad_carga_kg(50000.0);
-            case PRIVADO -> avion.setCantidad_asientos_vip(8);
+            case PASAJERO -> avion.setCapacidad_pasajero(faker.number().numberBetween(50, 500));
+            case GUERRA   -> avion.setAlcance_km(faker.number().randomDouble(0, 500, 10000));
+            case CARGA    -> avion.setCapacidad_carga_kg(faker.number().randomDouble(0, 1000, 100000));
+            case PRIVADO  -> avion.setCantidad_asientos_vip(faker.number().numberBetween(2, 20));
         }
 
         return avion;
     }
-    
+
+    // aca parten lost est
+
     @Test
     public void testObtenerTodos() {
-        when(avionRepository.findAll()).thenReturn(List.of(createAvion(TipoAvion.PASAJERO)));
+        Avion avion = createAvion(TipoAvion.PASAJERO);
+        when(avionRepository.findAll()).thenReturn(List.of(avion));
+
         var resultado = avionService.obtenerTodos();
+
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("CC-ABC", resultado.get(0).getMatricula());
+        assertEquals(avion.getMatricula(), resultado.get(0).getMatricula());
     }
 
     @Test
     public void testBuscarPorId() {
         Avion avion = createAvion(TipoAvion.PASAJERO);
         when(avionRepository.findById(1)).thenReturn(Optional.of(avion));
+
         var resultado = avionService.buscarPorId(1);
+
         assertNotNull(resultado);
-        assertEquals("CC-ABC", resultado.getMatricula());
+        assertEquals(avion.getMatricula(), resultado.getMatricula());
         assertEquals("PASAJERO", resultado.getTipo());
+        verify(avionRepository, times(1)).findById(1);
     }
-    
+
     @Test
     public void testBuscarPorIdNoExiste() {
         when(avionRepository.findById(99)).thenReturn(Optional.empty());
+
         assertThrows(RuntimeException.class, () -> avionService.buscarPorId(99));
     }
 
     @Test
     public void testGuardarAvionPasajero() {
         Avion avion = createAvion(TipoAvion.PASAJERO);
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(avion.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(avion.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.PASAJERO)));
         when(avionRepository.save(any(Avion.class))).thenReturn(avion);
 
         var resultado = avionService.guardarAvion(avion);
+
         assertNotNull(resultado);
-        assertEquals("CC-ABC", resultado.getMatricula());
+        assertEquals(avion.getMatricula(), resultado.getMatricula());
         assertEquals("PASAJERO", resultado.getTipo());
+        verify(avionRepository, times(1)).save(any(Avion.class));
     }
 
     @Test
     public void testGuardarAvionPasajeroSinCapacidad() {
         Avion avion = createAvion(TipoAvion.PASAJERO);
         avion.setCapacidad_pasajero(null);
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(avion.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(avion.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.PASAJERO)));
 
         assertThrows(RuntimeException.class, () -> avionService.guardarAvion(avion));
@@ -139,8 +159,8 @@ public class AvionServiceTest {
     public void testGuardarAvionGuerraSinAlcance() {
         Avion avion = createAvion(TipoAvion.GUERRA);
         avion.setAlcance_km(null);
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(avion.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(avion.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.GUERRA)));
 
         assertThrows(RuntimeException.class, () -> avionService.guardarAvion(avion));
@@ -150,8 +170,8 @@ public class AvionServiceTest {
     public void testGuardarAvionCargaSinCapacidad() {
         Avion avion = createAvion(TipoAvion.CARGA);
         avion.setCapacidad_carga_kg(null);
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(avion.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(avion.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.CARGA)));
 
         assertThrows(RuntimeException.class, () -> avionService.guardarAvion(avion));
@@ -161,8 +181,8 @@ public class AvionServiceTest {
     public void testGuardarAvionPrivadoSinAsientosVip() {
         Avion avion = createAvion(TipoAvion.PRIVADO);
         avion.setCantidad_asientos_vip(null);
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(avion.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(avion.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.PRIVADO)));
 
         assertThrows(RuntimeException.class, () -> avionService.guardarAvion(avion));
@@ -175,6 +195,7 @@ public class AvionServiceTest {
         doNothing().when(avionRepository).delete(avion);
 
         String resultado = avionService.eliminar(1);
+
         assertTrue(resultado.contains("correctamente"));
         verify(avionRepository, times(1)).delete(avion);
     }
@@ -182,23 +203,32 @@ public class AvionServiceTest {
     @Test
     public void testEliminarNoExiste() {
         when(avionRepository.findById(99)).thenReturn(Optional.empty());
+
         String resultado = avionService.eliminar(99);
+
         assertTrue(resultado.contains("no existe"));
     }
 
     @Test
     public void testBuscarPorMatricula() {
-        when(avionRepository.buscarPorMatricula("CC-ABC")).thenReturn(List.of(createAvion(TipoAvion.PASAJERO)));
-        var resultado = avionService.buscarPorMatricula("CC-ABC");
+        Avion avion = createAvion(TipoAvion.PASAJERO);
+        String matricula = avion.getMatricula();
+        when(avionRepository.buscarPorMatricula(matricula)).thenReturn(List.of(avion));
+
+        var resultado = avionService.buscarPorMatricula(matricula);
+
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        assertEquals("CC-ABC", resultado.get(0).getMatricula());
+        assertEquals(matricula, resultado.get(0).getMatricula());
     }
-    
+
     @Test
     public void testBuscarPorMatriculaNoExiste() {
-        when(avionRepository.buscarPorMatricula("XX-999")).thenReturn(List.of());
-        var resultado = avionService.buscarPorMatricula("XX-999");
+        String matriculaInexistente = faker.regexify("[A-Z]{2}-[A-Z]{3}");
+        when(avionRepository.buscarPorMatricula(matriculaInexistente)).thenReturn(List.of());
+
+        var resultado = avionService.buscarPorMatricula(matriculaInexistente);
+
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty());
     }
@@ -207,47 +237,56 @@ public class AvionServiceTest {
     public void testActualizarAvion() {
         Avion existente = createAvion(TipoAvion.PASAJERO);
         Avion actualizado = createAvion(TipoAvion.PASAJERO);
-        actualizado.setMarca("Airbus");
+        String nuevaMarca = faker.regexify("[A-Za-z]{5,10}");
+        actualizado.setMarca(nuevaMarca);
 
         when(avionRepository.findById(1)).thenReturn(Optional.of(existente));
-        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(createFabricante()));
-        when(origenRepository.findById(1)).thenReturn(Optional.of(createOrigen()));
+        when(fabricanteRepository.findById(1)).thenReturn(Optional.of(actualizado.getFabricante()));
+        when(origenRepository.findById(1)).thenReturn(Optional.of(actualizado.getOrigen()));
         when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo(TipoAvion.PASAJERO)));
         when(avionRepository.save(any(Avion.class))).thenReturn(actualizado);
 
         var resultado = avionService.actualizarAvion(1, actualizado);
+
+    
         assertNotNull(resultado);
-        assertEquals("Airbus", resultado.getMarca());
+        assertEquals(nuevaMarca, resultado.getMarca());
+        verify(avionRepository, times(1)).save(any(Avion.class));
     }
 
     @Test
     public void testActualizarAvionNoExiste() {
         when(avionRepository.findById(99)).thenReturn(Optional.empty());
         Avion actualizado = createAvion(TipoAvion.PASAJERO);
+
         assertThrows(RuntimeException.class, () -> avionService.actualizarAvion(99, actualizado));
     }
 
     @Test
     public void testPatchAvion() {
         Avion existente = createAvion(TipoAvion.PASAJERO);
+        String nuevaMarca = faker.regexify("[A-Za-z]{5,10}");
+        existente.setMarca(nuevaMarca);
+
         Avion patch = new Avion();
-        patch.setMarca("Airbus");
+        patch.setMarca(nuevaMarca);
 
         when(avionRepository.findById(1)).thenReturn(Optional.of(existente));
         when(avionRepository.save(any(Avion.class))).thenReturn(existente);
 
         var resultado = avionService.patchAvion(1, patch);
+
         assertNotNull(resultado);
-        assertEquals("Airbus", resultado.getMarca());
+        assertEquals(nuevaMarca, resultado.getMarca());
+        verify(avionRepository, times(1)).save(any(Avion.class));
     }
 
     @Test
     public void testPatchAvionNoExiste() {
         when(avionRepository.findById(99)).thenReturn(Optional.empty());
         Avion patch = new Avion();
-        patch.setMarca("Airbus");
+        patch.setMarca(faker.regexify("[A-Za-z]{5,10}"));
+
         assertThrows(RuntimeException.class, () -> avionService.patchAvion(99, patch));
     }
-
-    
 }

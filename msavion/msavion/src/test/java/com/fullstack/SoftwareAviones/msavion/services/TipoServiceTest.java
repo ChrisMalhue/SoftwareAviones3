@@ -24,7 +24,10 @@ public class TipoServiceTest {
 
     @MockitoBean
     private TipoRepository tipoRepository;
-    
+
+    // no puse datafaker aca ya que este model esta conectado a un enum con 4 valores fijos,
+    // y no se puede crear uno que no sea esos 4
+
     private Tipo createTipo() {
         Tipo tipo = new Tipo();
         tipo.setId_tipo(1);
@@ -33,10 +36,15 @@ public class TipoServiceTest {
         return tipo;
     }
 
+    // aca parten los test
+
     @Test
     public void testObtenerTodos() {
-        when(tipoRepository.findAll()).thenReturn(List.of(createTipo()));
+        Tipo tipo = createTipo();
+        when(tipoRepository.findAll()).thenReturn(List.of(tipo));
+
         var resultado = tipoService.obtenerTodos();
+
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
         assertEquals("PASAJERO", resultado.get(0).getTipo());
@@ -44,15 +52,20 @@ public class TipoServiceTest {
 
     @Test
     public void testBuscarPorId() {
-        when(tipoRepository.findById(1)).thenReturn(Optional.of(createTipo()));
+        Tipo tipo = createTipo();
+        when(tipoRepository.findById(1)).thenReturn(Optional.of(tipo));
+
         var resultado = tipoService.buscarPorId(1);
+
         assertNotNull(resultado);
         assertEquals("PASAJERO", resultado.getTipo());
+        verify(tipoRepository, times(1)).findById(1);
     }
 
     @Test
     public void testBuscarPorIdNoExiste() {
         when(tipoRepository.findById(99)).thenReturn(Optional.empty());
+
         assertThrows(RuntimeException.class, () -> tipoService.buscarPorId(99));
     }
 
@@ -60,14 +73,19 @@ public class TipoServiceTest {
     public void testGuardarTipo() {
         Tipo tipo = createTipo();
         when(tipoRepository.save(tipo)).thenReturn(tipo);
+
         var resultado = tipoService.guardarTipo(tipo);
+
         assertNotNull(resultado);
         assertEquals("PASAJERO", resultado.getTipo());
+        verify(tipoRepository, times(1)).save(tipo);
     }
 
     @Test
     public void testActualizarTipo() {
         Tipo existente = createTipo();
+        existente.setTipo(TipoAvion.GUERRA);
+
         Tipo actualizado = new Tipo();
         actualizado.setTipo(TipoAvion.GUERRA);
         actualizado.setAviones(List.of());
@@ -76,8 +94,10 @@ public class TipoServiceTest {
         when(tipoRepository.save(any(Tipo.class))).thenReturn(existente);
 
         var resultado = tipoService.actualizarTipo(1, actualizado);
+
         assertNotNull(resultado);
         assertEquals("GUERRA", resultado.getTipo());
+        verify(tipoRepository, times(1)).save(any(Tipo.class));
     }
 
     @Test
@@ -85,12 +105,15 @@ public class TipoServiceTest {
         when(tipoRepository.findById(99)).thenReturn(Optional.empty());
         Tipo actualizado = new Tipo();
         actualizado.setTipo(TipoAvion.GUERRA);
+
         assertThrows(RuntimeException.class, () -> tipoService.actualizarTipo(99, actualizado));
     }
 
     @Test
     public void testPatchTipo() {
         Tipo existente = createTipo();
+        existente.setTipo(TipoAvion.CARGA);
+
         Tipo patch = new Tipo();
         patch.setTipo(TipoAvion.CARGA);
 
@@ -98,8 +121,10 @@ public class TipoServiceTest {
         when(tipoRepository.save(any(Tipo.class))).thenReturn(existente);
 
         var resultado = tipoService.patchTipo(1, patch);
+
         assertNotNull(resultado);
         assertEquals("CARGA", resultado.getTipo());
+        verify(tipoRepository, times(1)).save(any(Tipo.class));
     }
 
     @Test
@@ -107,6 +132,7 @@ public class TipoServiceTest {
         when(tipoRepository.findById(99)).thenReturn(Optional.empty());
         Tipo patch = new Tipo();
         patch.setTipo(TipoAvion.CARGA);
+
         assertThrows(RuntimeException.class, () -> tipoService.patchTipo(99, patch));
     }
 
@@ -117,6 +143,7 @@ public class TipoServiceTest {
         doNothing().when(tipoRepository).delete(tipo);
 
         String resultado = tipoService.eliminar(1);
+
         assertTrue(resultado.contains("exitosamente"));
         verify(tipoRepository, times(1)).delete(tipo);
     }
@@ -124,8 +151,9 @@ public class TipoServiceTest {
     @Test
     public void testEliminarNoExiste() {
         when(tipoRepository.findById(99)).thenReturn(Optional.empty());
+
         String resultado = tipoService.eliminar(99);
+
         assertTrue(resultado.contains("no existe"));
     }
-
 }
