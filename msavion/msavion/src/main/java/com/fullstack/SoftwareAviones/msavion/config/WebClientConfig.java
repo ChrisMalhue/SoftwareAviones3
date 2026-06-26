@@ -1,4 +1,4 @@
-package com.fullstack.SoftwareAviones.msvuelo.config;
+package com.fullstack.SoftwareAviones.msavion.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
@@ -10,11 +10,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebClientConfig {
 
-    @Bean
-    @LoadBalanced
-    public WebClient.Builder webClientBuilder() {
-        return WebClient.builder();
-    }
+  @Bean
+  @LoadBalanced
+  public WebClient.Builder webClientBuilder() {
+    return WebClient.builder();
+  }
 
   @Bean
   public WebMvcConfigurer corsConfigurer() {
@@ -32,3 +32,5 @@ public class WebClientConfig {
     };
   }
 }
+
+
