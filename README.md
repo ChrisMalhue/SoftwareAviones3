@@ -3,7 +3,6 @@ MSAVION:
 json post avión: 
 {
     "matricula": "CC-GUE",
-    "marca": "Lockheed",
     "modelo": "F-16",
     "tipo": { "id_tipo": 3 },
     "fabricante": { "id_fabricante": 3 },
