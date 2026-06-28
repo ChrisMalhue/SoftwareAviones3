@@ -45,7 +45,7 @@ public class TipoService {
         log.info("Buscando Tipo Por ID: {}", id);
         return tipoRepository.findById(id).orElse(null);
     }
-    //actualizar 
+    //actualizar, estos pueden salir volando a futuro 
     public TipoDTO actualizarTipo(Integer id, Tipo tipoActualizado) {
         log.info("Actualizando Informacion Del Tipo con ID: {}", id);
         Tipo tipo = tipoRepository.findById(id)
@@ -53,7 +53,7 @@ public class TipoService {
         tipo.setTipo(tipoActualizado.getTipo());
         return convertirADTO(tipoRepository.save(tipo));
     }
-    //eliminar 
+    //eliminar, estos pueden salir volando a futuro 
     public String eliminar(Integer id) {
         log.info("Eliminando Un Tipo Del Sistema");
         try {
@@ -89,6 +89,7 @@ public class TipoService {
         return dto;
     }
 
+    // estos pueden salir volando a futuro 
     public TipoDTO patchTipo(Integer id, Tipo tipo) {
         Tipo tipo2 = tipoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Tipo no encontrado"));

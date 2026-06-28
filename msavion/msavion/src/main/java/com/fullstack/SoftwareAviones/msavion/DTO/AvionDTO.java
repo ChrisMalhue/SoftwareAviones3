@@ -6,7 +6,6 @@ import lombok.Data;
 public class AvionDTO{
     private Integer ID_avion;
     private String matricula;
-    private String marca;
     private String modelo;
     private String tipo;
     private Integer capacidad_pasajero;

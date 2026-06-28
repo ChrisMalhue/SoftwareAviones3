@@ -139,7 +139,6 @@ public class AvionService {
 
         dto.setID_avion(avion.getID_avion());
         dto.setMatricula(avion.getMatricula());
-        dto.setMarca(avion.getMarca());
         dto.setModelo(avion.getModelo());
         if (avion.getTipo() != null) {
             dto.setTipo(
@@ -185,7 +184,6 @@ public class AvionService {
             .orElseThrow(() -> new RuntimeException("Tipo no encontrado")));
 
         avion.setMatricula(avionActualizado.getMatricula());
-        avion.setMarca(avionActualizado.getMarca());
         avion.setModelo(avionActualizado.getModelo());
         avion.setTipo(avionActualizado.getTipo());
 
@@ -234,8 +232,6 @@ public class AvionService {
 
         if (avion.getMatricula() != null)
             avion2.setMatricula(avion.getMatricula());
-        if (avion.getMarca() != null)
-            avion2.setMarca(avion.getMarca());
         if (avion.getModelo() != null)
             avion2.setModelo(avion.getModelo());
         if (avion.getTipo() != null)

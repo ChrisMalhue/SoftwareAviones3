@@ -44,12 +44,9 @@ public class AvionServiceTest {
 
     private final Faker faker = new Faker();
 
-    // aca parte la zona de los create 
-
     private Fabricante createFabricante() {
         Fabricante fabricante = new Fabricante();
         fabricante.setId_fabricante(1);
-        // regexify garantiza exactamente el largo y formato que necesitamos (5-15 chars, solo letras)
         fabricante.setNombre_fabricante(faker.regexify("[A-Za-z]{5,10}"));
         fabricante.setAviones(List.of());
         return fabricante;
@@ -58,7 +55,6 @@ public class AvionServiceTest {
     private Origen createOrigen() {
         Origen origen = new Origen();
         origen.setId_origen(1);
-        // tuve que buscar el regefixy para que vaya a juego con los patterns pa que no piense algo exotico D:
         origen.setPais_origen(faker.regexify("[A-Za-z]{3,10}"));
         origen.setAviones(List.of());
         return origen;
@@ -76,7 +72,6 @@ public class AvionServiceTest {
         Avion avion = new Avion();
         avion.setID_avion(1);
         avion.setMatricula(faker.regexify("[A-Z]{2}-[A-Z]{3}"));
-        avion.setMarca(faker.regexify("[A-Za-z]{5,15}"));
         avion.setModelo(faker.regexify("[A-Za-z]{3}-[0-9]{3}"));
         avion.setEnvergadura_metros(faker.number().randomDouble(1, 10, 80));
         avion.setCapacidad_combustible(faker.number().randomDouble(0, 5000, 100000));
@@ -93,8 +88,6 @@ public class AvionServiceTest {
 
         return avion;
     }
-
-    // aca parten lost est
 
     @Test
     public void testObtenerTodos() {
@@ -237,8 +230,8 @@ public class AvionServiceTest {
     public void testActualizarAvion() {
         Avion existente = createAvion(TipoAvion.PASAJERO);
         Avion actualizado = createAvion(TipoAvion.PASAJERO);
-        String nuevaMarca = faker.regexify("[A-Za-z]{5,10}");
-        actualizado.setMarca(nuevaMarca);
+        String nuevoModelo = faker.regexify("[A-Za-z]{3}-[0-9]{3}");
+        actualizado.setModelo(nuevoModelo);
 
         when(avionRepository.findById(1)).thenReturn(Optional.of(existente));
         when(fabricanteRepository.findById(1)).thenReturn(Optional.of(actualizado.getFabricante()));
@@ -248,9 +241,8 @@ public class AvionServiceTest {
 
         var resultado = avionService.actualizarAvion(1, actualizado);
 
-    
         assertNotNull(resultado);
-        assertEquals(nuevaMarca, resultado.getMarca());
+        assertEquals(nuevoModelo, resultado.getModelo());
         verify(avionRepository, times(1)).save(any(Avion.class));
     }
 
@@ -265,11 +257,11 @@ public class AvionServiceTest {
     @Test
     public void testPatchAvion() {
         Avion existente = createAvion(TipoAvion.PASAJERO);
-        String nuevaMarca = faker.regexify("[A-Za-z]{5,10}");
-        existente.setMarca(nuevaMarca);
+        String nuevoModelo = faker.regexify("[A-Za-z]{3}-[0-9]{3}");
+        existente.setModelo(nuevoModelo);
 
         Avion patch = new Avion();
-        patch.setMarca(nuevaMarca);
+        patch.setModelo(nuevoModelo);
 
         when(avionRepository.findById(1)).thenReturn(Optional.of(existente));
         when(avionRepository.save(any(Avion.class))).thenReturn(existente);
@@ -277,7 +269,7 @@ public class AvionServiceTest {
         var resultado = avionService.patchAvion(1, patch);
 
         assertNotNull(resultado);
-        assertEquals(nuevaMarca, resultado.getMarca());
+        assertEquals(nuevoModelo, resultado.getModelo());
         verify(avionRepository, times(1)).save(any(Avion.class));
     }
 
@@ -285,7 +277,7 @@ public class AvionServiceTest {
     public void testPatchAvionNoExiste() {
         when(avionRepository.findById(99)).thenReturn(Optional.empty());
         Avion patch = new Avion();
-        patch.setMarca(faker.regexify("[A-Za-z]{5,10}"));
+        patch.setModelo(faker.regexify("[A-Za-z]{3}-[0-9]{3}"));
 
         assertThrows(RuntimeException.class, () -> avionService.patchAvion(99, patch));
     }

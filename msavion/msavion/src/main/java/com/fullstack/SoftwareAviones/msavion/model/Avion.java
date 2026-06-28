@@ -38,12 +38,6 @@ public class Avion {
     @Column(nullable = false,unique = true, length = 8)
     private String matricula;
 
-    @NotBlank (message = "La marca del avion es obligatoria")
-    @Size(min = 3, max = 30, message = "La marca debe contener entre 3 y 30 caracteres")
-    @Pattern(regexp = "^[A-Za-z ]+$", message = "La marca solo debe contener letras y espacios")
-    @Column(nullable = false, length = 30)
-    private String marca;
-
     @NotBlank (message = "El modelo es obligatorio")
     @Size(min = 2, max = 50, message = "El modelo debe tener entre 2 y 50 caracteres")
     @Pattern(regexp = "^[A-Za-z0-9]+([\\- ][A-Za-z0-9]+)*$", message = "El modelo solo debe contener letras, numeros, espacios o guiones")
